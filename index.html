@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>Calendario Multimedia</title>
 
-<!-- ID3 tags -->
+<!-- ID3 -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
 <!-- YouTube IFrame API -->
 <script async src="https://www.youtube.com/iframe_api"></script>
@@ -21,7 +21,7 @@
   --bg:#f8fafc; --surface:#ffffff; --surface-2:#f1f5f9; --text:#0f172a; --text-2:#475569; --primary:#0ea5e9; --primary-2:#0284c7; --border:#e5e7eb;
 }
 
-/* Temas (se mantienen como antes) */
+/* Temas */
 [data-theme="normal"]{ --bg-image:none; --shape:12px; }
 [data-theme="retro"]{ --primary:#f59e0b; --primary-2:#d97706; --bg-image:url('https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=1600&auto=format&fit=crop'); --shape:8px; }
 [data-theme="naturaleza"]{ --primary:#16a34a; --primary-2:#15803d; --bg-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop'); --shape:18px; }
@@ -61,11 +61,7 @@ body{
 .drawer .overlay{position:absolute;inset:0;background:rgba(0,0,0,.45)}
 .drawer .panel{position:absolute;left:0;top:0;height:100%;width:280px;background:var(--surface);border-right:1px solid var(--border);padding:12px;box-shadow:var(--shadow)}
 
-.app{display:grid;grid-template-columns:260px 1fr;gap:12px;min-height:100vh}
-.sidebar{position:sticky;top:58px;align-self:start;height:calc(100vh - 58px);padding:10px;background:var(--surface);border-right:1px solid var(--border)}
-.side-title{margin:6px 6px 10px;font-weight:700}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav button{width:100%;text-align:left}
+.app{min-height:100vh}
 .content{padding:12px}
 
 /* Views */
@@ -83,7 +79,7 @@ body{
 .subtitle{color:var(--text-2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* Mini player */
-.mini{position:fixed;bottom:0;left:260px;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 12px;display:none;gap:8px;z-index:40}
+.mini{position:fixed;bottom:0;left:0;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 12px;display:none;gap:8px;z-index:40}
 .mini.active{display:flex;flex-direction:column}
 .mini-top{display:flex;align-items:center;gap:10px}
 .prog{height:8px;background:var(--surface-2);border-radius:999px;overflow:hidden;cursor:pointer}
@@ -94,8 +90,8 @@ body{
 #yt.visible{opacity:1;pointer-events:auto;transform:scale(1)}
 
 /* Calendario */
-.calendar-wrap{display:grid;grid-template-columns:1fr 340px;gap:12px}
 .panel{background:var(--surface);border:1px solid var(--border);border-radius:var(--shape);box-shadow:var(--shadow)}
+.toolbar{padding:10px;display:flex;gap:8px;align-items:center;justify-content:space-between}
 .calendar{padding:12px}
 .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
 .cal-head{padding:8px;text-align:center;color:var(--text-2);font-weight:700}
@@ -104,15 +100,13 @@ body{
 .dotwrap{position:absolute;left:8px;bottom:8px;display:flex;gap:6px}
 .dot{width:8px;height:8px;border-radius:999px}
 .dot.task{background:#22c55e}.dot.note{background:#3b82f6}.dot.birthday{background:#f97316}
+.calendar-wrap{display:grid;grid-template-columns:1fr 340px;gap:12px}
 .agenda{padding:12px;display:flex;flex-direction:column}
 .agenda h3{margin:6px 0 12px}
-#agenda{display:flex;flex-direction:column;gap:8px;/* 5 tarjetas visibles aprox */ max-height:360px; overflow-y:auto; padding-right:4px}
+#agenda{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;padding-right:4px}
 
 /* Responsive */
 @media (max-width: 1020px){
-  .app{grid-template-columns:1fr}
-  .sidebar{display:none} /* En móvil se usa el drawer */
-  .mini{left:0}
   .calendar-wrap{grid-template-columns:1fr}
 }
 @media (max-width: 420px){
@@ -130,7 +124,7 @@ body{
     <h1 id="app-title">Calendario Multimedia</h1>
   </div>
   <div class="top-actions">
-    <!-- Selector Tema/Modo -->
+    <!-- Tema/Modo -->
     <div class="dropdown">
       <button class="icon" id="btn-theme" title="Tema y modo">🎨</button>
       <div class="menu" id="menu-theme" aria-label="Selector de tema y modo">
@@ -178,12 +172,12 @@ body{
   </div>
 </div>
 
-<!-- Drawer (3 rayas) -->
+<!-- Drawer -->
 <div class="drawer" id="drawer">
   <div class="overlay" id="drawer-close"></div>
   <div class="panel">
-    <div class="side-title">Navegación</div>
-    <div class="nav">
+    <div style="font-weight:700;margin:6px 6px 10px">Navegación</div>
+    <div style="display:flex;flex-direction:column;gap:6px">
       <button class="btn" data-view="cal">📅 Calendario</button>
       <button class="btn" data-view="lib">📚 Biblioteca</button>
       <button class="btn" data-view="pls">🎧 Playlists</button>
@@ -193,20 +187,9 @@ body{
 </div>
 
 <div class="app">
-  <!-- Sidebar (escritorio) -->
-  <aside class="sidebar panel">
-    <div class="side-title">Navegación</div>
-    <div class="nav">
-      <button class="btn" data-view="cal">📅 Calendario</button>
-      <button class="btn" data-view="lib">📚 Biblioteca</button>
-      <button class="btn" data-view="pls">🎧 Playlists</button>
-      <button class="btn" data-view="tsk">✅ Tareas</button>
-    </div>
-  </aside>
-
   <main class="content">
-    <!-- Barra mes y búsqueda -->
-    <div class="panel" style="padding:10px;display:flex;gap:8px;align-items:center;justify-content:space-between">
+    <!-- Toolbar calendario -->
+    <div class="panel toolbar">
       <div style="display:flex;gap:8px;align-items:center">
         <button class="btn" id="prev-month">◀</button>
         <h3 id="month-title" style="margin:0">—</h3>
@@ -301,7 +284,7 @@ body{
 <audio id="audio"></audio>
 <div id="yt"></div>
 
-<!-- Inline modal YouTube -->
+<!-- Modal inline YouTube -->
 <div class="menu panel" id="yt-inline" style="position:fixed;left:50%;transform:translateX(-50%);top:80px;display:none;z-index:50;max-width:680px;width:90%">
   <h4 style="margin:6px 0 8px">Añadir desde YouTube</h4>
   <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
@@ -333,7 +316,7 @@ applyScheme(); applyTheme();
 function updateTitle(){ U.q('#app-title').textContent = window.innerWidth<420 ? 'CM' : 'Calendario Multimedia'; }
 window.addEventListener('resize', updateTitle); updateTitle();
 
-/* Dropdowns */
+/* Menús desplegables */
 function toggleMenu(id){ const m=U.q(id); document.querySelectorAll('.menu').forEach(x=>{ if(x!==m) x.classList.remove('show'); }); m.classList.toggle('show'); }
 document.addEventListener('click',e=>{
   if(e.target.id==='btn-theme') toggleMenu('#menu-theme');
@@ -353,15 +336,13 @@ U.q('#opt-cb').addEventListener('change',e=>document.documentElement.setAttribut
 U.q('#opt-next').addEventListener('change',e=>state.autoplayNext=e.target.checked);
 U.q('#opt-sleep').addEventListener('change',e=>state.sleepMin=Number(e.target.value)||0);
 
-/* Drawer (tres rayas) */
+/* Drawer (☰) */
 const drawer=U.q('#drawer'); const openDrawer=()=>drawer.classList.add('show'); const closeDrawer=()=>drawer.classList.remove('show');
 U.q('#btn-ham').addEventListener('click',openDrawer);
 U.q('#drawer-close').addEventListener('click',closeDrawer);
 document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeDrawer(); });
-drawer.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>{ closeDrawer(); switchView(b.getAttribute('data-view')); }));
+drawer.querySelectorAll('[data-view]').forEach(b=>b.addEventListener('click',()=>{ closeDrawer(); switchView(b.getAttribute('data-view')); }));
 
-/* Sidebar desktop */
-document.querySelectorAll('.sidebar .nav button').forEach(b=>b.addEventListener('click',()=>switchView(b.getAttribute('data-view'))));
 function switchView(v){
   document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
   U.q('#view-'+v).classList.add('active'); state.view=v;
@@ -434,13 +415,15 @@ function playIndex(i){
   const prev=state.songs[state.idx];
   state.idx=i; const s=state.songs[i]; updateMini(s); setMini(true);
 
-  // Limpieza estricta de jugadores para evitar solapes
+  // Limpieza estricta para evitar solapes
   if(prev?.type==='youtube') destroyYT();
   audio.pause(); audio.src='';
 
-  if(s.type==='youtube'){ ensureYT(s); U.q('#play').textContent='⏸️'; }
-  else{
+  if(s.type==='youtube'){
+    ensureYT(s); U.q('#play').textContent='⏸️';
+    // vídeo minimizado por defecto
     U.q('#yt').classList.remove('visible'); state.yt.visible=false; U.q('#yt-toggle').textContent='📺';
+  } else {
     audio.src = s.blob ? URL.createObjectURL(s.blob) : (s.fileUrl||'');
     audio.play().catch(()=>{});
     U.q('#play').textContent='⏸️';
@@ -499,7 +482,9 @@ U.q('#m-yt-save').addEventListener('click',async()=>{
   // oEmbed para título y autor
   let realTitle='',realAuthor=''; try{ const r=await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`); if(r.ok){ const j=await r.json(); realTitle=j.title||''; realAuthor=j.author_name||''; } }catch{}
   const s={ id:Date.now(), title:(U.q('#m-yt-title').value||realTitle||'YouTube').trim(), artist:(U.q('#m-yt-artist').value||realAuthor||'YouTube').trim(), type:'youtube', youtubeId:id, cover:`https://img.youtube.com/vi/${id}/mqdefault.jpg`, genres:[], moods:[], album:'YouTube' };
-  await classifyAndCover(s); state.songs.push(s); persistSongs(); renderSongs();
+  ensureCoverGuaranteed(s); // asigna fallback ya
+  await classifyAndCover(s); // mejora si puede
+  state.songs.push(s); persistSongs(); renderSongs();
   U.q('#yt-inline').style.display='none'; U.q('#m-yt-url').value=''; U.q('#m-yt-title').value=''; U.q('#m-yt-artist').value='';
 });
 
@@ -508,8 +493,9 @@ async function handleFiles(files){
   for(const file of arr){
     const base=file.name.replace(/\.[^/.]+$/,'');
     const s={ id:Date.now()+Math.random(), title:base, artist:'Desconocido', album:'Archivo Local', type:'local', blob:file, cover:null, genres:[], moods:[], fileName:file.name, date:new Date().toISOString() };
-    await extractMetadata(s);
-    await classifyAndCover(s);
+    ensureCoverGuaranteed(s);           // portada inmediata
+    await extractMetadata(s);           // puede rellenar y carátula
+    await classifyAndCover(s);          // mejora carátula si sigue vacía
     state.songs.push(s);
   }
   persistSongs(); renderSongs();
@@ -529,17 +515,19 @@ async function extractMetadata(song){
 
 /* Portadas robustas */
 function fallbackCoverFor(song){
-  const tag=(song.genres?.[0]||song.moods?.[0]||'music album').toLowerCase();
+  const tag=(song.genres?.[0]||song.moods?.[0]||song.title||'music album').toString().toLowerCase();
   return `https://source.unsplash.com/featured/512x512?${encodeURIComponent(tag)}`;
 }
+function ensureCoverGuaranteed(song){
+  if(!song.cover) song.cover=fallbackCoverFor(song);
+}
 async function ensureCoverViaSearch(song){
-  if(song.cover) return;
+  if(song.cover && !song.cover.includes('source.unsplash.com')) return; // ya tenía buena
   if(song.youtubeId){ song.cover=`https://img.youtube.com/vi/${song.youtubeId}/mqdefault.jpg`; return; }
-  // YouTube search via Piped → Invidious
   const q=((song.artist||'')+' '+(song.title||'')).trim() || (song.title||song.artist||'');
   const y1=await fetchYTThumbPiped(q); if(y1){ song.cover=y1; return; }
   const y2=await fetchYTThumbInv(q); if(y2){ song.cover=y2; return; }
-  song.cover=fallbackCoverFor(song);
+  // deja el fallback si no hay suerte
 }
 async function fetchYTThumbPiped(query){
   if(!query) return null;
@@ -606,7 +594,7 @@ function renderSongs(){
     const playing=(state.idx>=0 && state.songs[state.idx]?.id===s.id)?'outline:3px solid var(--primary);':'';
     const cover = s.cover
       ? `<img src="${s.cover}" alt="${s.title}" onerror="this.onerror=null;this.src='${fallbackCoverFor(s)}'">`
-      : '🎵';
+      : `<img src="${fallbackCoverFor(s)}" alt="${s.title}">`;
     return `<div class="card" style="${playing}" data-id="${s.id}">
       <div class="cover">${cover}</div>
       <div class="title">${s.title||''}</div>
@@ -625,8 +613,9 @@ function renderSongs(){
   g.querySelectorAll('[data-add]').forEach(b=>b.addEventListener('click',e=>openAddToPlaylist(Number(e.currentTarget.closest('.card').dataset.id))));
 
   populateFilters();
-  // Refuerzo: intenta cubrir huecos post-render
-  list.filter(s=>!s.cover).forEach(async s=>{ await ensureCoverViaSearch(s); persistSongs(); renderSongs(); });
+
+  // Mejora en caliente de portadas
+  list.forEach(async s=>{ if(!s.cover || s.cover.includes('source.unsplash.com')){ await ensureCoverViaSearch(s); persistSongs(); } });
 }
 function populateFilters(){
   const genres=new Set(), moods=new Set(); state.songs.forEach(s=>{ (s.genres||[]).forEach(x=>genres.add(x)); (s.moods||[]).forEach(x=>moods.add(x)); });
@@ -668,7 +657,7 @@ function renderPlaylists(){
   wrap.querySelectorAll('[data-cover]').forEach(b=>b.addEventListener('click',e=>{ const name=e.currentTarget.getAttribute('data-cover'); const fi=U.q('#pls-cover-file'); fi.onchange=ev=>{ const f=ev.target.files?.[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ const p=state.playlists.find(x=>x.name===name); if(p){ p.cover=r.result; savePlaylists(); renderPlaylists(); } }; r.readAsDataURL(f); }; fi.click(); }));
 }
 
-/* Calendario / Agenda (5 visibles + scroll) */
+/* Calendario / Agenda */
 let monthOffset=0;
 U.q('#prev-month').addEventListener('click',()=>{ monthOffset--; renderCalendar(); });
 U.q('#next-month').addEventListener('click',()=>{ monthOffset++; renderCalendar(); });
@@ -692,8 +681,8 @@ function renderCalendar(){
   renderAgenda();
 }
 function renderAgenda(){
-  const from=new Date(); const back=new Date(from); back.setDate(from.getDate()-30);
-  const lst=state.events.filter(ev=> new Date(ev.date)>=back && new Date(ev.date)<=from)
+  const now=new Date(); const past=new Date(now); past.setDate(now.getDate()-30);
+  const lst=state.events.filter(ev=> new Date(ev.date)>=past && new Date(ev.date)<=now)
     .sort((a,b)=>(new Date(b.date)-new Date(a.date))||((b.priority||1)-(a.priority||1)));
   U.q('#agenda').innerHTML= lst.map(ev=>`<div class="panel" style="padding:8px;display:flex;justify-content:space-between;align-items:center">
     <div><span style="font-size:12px;opacity:.8">${ev.type}</span> <b>${ev.title}</b> · ${ev.date}${ev.time?' · '+ev.time:''}</div>
@@ -746,33 +735,52 @@ function renderTasks(){
   cont.querySelectorAll('[data-done]').forEach(b=>b.addEventListener('click',e=>toggleDone(e.currentTarget.getAttribute('data-done'))));
 }
 
-/* Precarga eventos próximos 20 días si no hay */
-(function seedNext20(){
+/* Precarga: últimos 20 días + próximos 20 si no hay nada */
+(function seedAround(){
   if(state.events.length>0) return;
   const now=new Date();
+  // últimos 20 (pasado)
+  for(let i=1;i<=20;i++){
+    const d=new Date(now); d.setDate(now.getDate()-i); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(i%5===0) state.events.push({id:'evp-'+Date.now()+i,title:'Cumpleaños (pasado) '+i,type:'birthday',time:'',priority:1,done:!!(i%4===0),date:key});
+    if(i%2===0) state.events.push({id:'evp-'+Date.now()+'a'+i,title:'Estudiar (pasado) tema '+i,type:'task',time:'18:00',priority:3,done:!!(i%3===0),date:key});
+    if(i%3===0) state.events.push({id:'evp-'+Date.now()+'n'+i,title:'Nota (pasado) '+i,type:'note',time:'',priority:2,done:false,date:key});
+  }
+  // próximos 20 (futuro) — útil para probar en calendario
   for(let i=1;i<=20;i++){
     const d=new Date(now); d.setDate(now.getDate()+i); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    if(i%5===0) state.events.push({id:'ev-'+Date.now()+i,title:'Cumple de Amig@ '+i,type:'birthday',time:'',priority:1,done:false,date:key});
-    if(i%2===0) state.events.push({id:'ev-'+Date.now()+'a'+i,title:'Estudiar 1h (tema '+i+')',type:'task',time:'18:00',priority:3,done:false,date:key});
-    if(i%3===0) state.events.push({id:'ev-'+Date.now()+'n'+i,title:'Nota: idea playlist '+i,type:'note',time:'',priority:2,done:false,date:key});
+    if(i%5===0) state.events.push({id:'evf-'+Date.now()+i,title:'Cumple de Amig@ '+i,type:'birthday',time:'',priority:1,done:false,date:key});
+    if(i%2===0) state.events.push({id:'evf-'+Date.now()+'a'+i,title:'Estudiar 1h (tema '+i+')',type:'task',time:'18:00',priority:3,done:false,date:key});
+    if(i%3===0) state.events.push({id:'evf-'+Date.now()+'n'+i,title:'Nota: idea playlist '+i,type:'note',time:'',priority:2,done:false,date:key});
   }
   saveEvents();
 })();
 
-/* Bootstrap: cargar GitHub desde el inicio, sin esperar a añadir locales */
+/* Bootstrap: carga GitHub al inicio (sin esperar a añadir locales) */
 (async function bootstrap(){
   try{
     const gh=await fetchGitHubSongs();
     const seen=new Set(state.songs.map(s=>s.type+'|'+(s.fileUrl||s.youtubeId||s.title)));
-    for(const s of gh){ const key=s.type+'|'+(s.fileUrl||s.youtubeId||s.title); if(!seen.has(key)){ await classifyAndCover(s); state.songs.push(s); } }
+    for(const s of gh){
+      const key=s.type+'|'+(s.fileUrl||s.youtubeId||s.title);
+      if(!seen.has(key)){
+        ensureCoverGuaranteed(s);        // portada inmediata
+        await classifyAndCover(s);       // mejora si puede
+        state.songs.push(s);
+      }
+    }
   }catch{}
-  // Reforzar todos
-  for(const s of state.songs){ if(!s.genres?.length || s.genres.length<2 || !s.moods?.length || s.moods.length<3) autoTagSong(s); if(!s.cover) await ensureCoverViaSearch(s); }
+  // Reforzar todo el catálogo
+  for(const s of state.songs){
+    if(!s.genres?.length || s.genres.length<2 || !s.moods?.length || s.moods.length<3) autoTagSong(s);
+    ensureCoverGuaranteed(s);
+    await ensureCoverViaSearch(s);
+  }
   persistSongs();
   renderCalendar(); renderSongs(); renderPlaylists(); renderTasks();
 })();
 
-/* Accesos rápidos */
+/* Acceso rápido teclado */
 document.addEventListener('keydown',e=>{
   if(e.code==='Space' && document.activeElement===document.body){ e.preventDefault(); U.q('#play').click(); }
   if(e.code==='ArrowRight' && state.idx>=0){ e.preventDefault(); U.q('#next').click(); }

@@ -4025,34 +4025,29 @@
       youtubeContainer.appendChild(iframe);
 
 const ytControls = document.createElement('div');
-ytControls.style.cssText = 'background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 15px; display: flex; justify-content: center; gap: 15px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5);';
+ytControls.id = 'youtube-custom-controls';
+ytControls.style.cssText = 'background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 15px; display: flex; justify-content: center; gap: 15px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); margin-top: 5px;';
 
 const btnPrev = document.createElement('button');
 btnPrev.innerHTML = '⏮️ Anterior';
-btnPrev.style.cssText = 'padding: 12px 24px; cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(102,126,234,0.4); transition: all 0.3s;';
-btnPrev.onmouseover = () => { btnPrev.style.transform = 'translateY(-2px)'; btnPrev.style.boxShadow = '0 6px 20px rgba(102,126,234,0.6)'; };
-btnPrev.onmouseout = () => { btnPrev.style.transform = 'translateY(0)'; btnPrev.style.boxShadow = '0 4px 15px rgba(102,126,234,0.4)'; };
-btnPrev.onclick = () => { console.log('⏮️ Anterior'); previousSong(); };
+btnPrev.style.cssText = 'padding: 12px 24px; cursor: pointer; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(102,126,234,0.4); transition: all 0.3s ease;';
+btnPrev.onclick = () => { previousSong(); };
 
 const btnStop = document.createElement('button');
 btnStop.innerHTML = '⏹️ Detener';
-btnStop.style.cssText = 'padding: 12px 24px; cursor: pointer; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(245,87,108,0.4); transition: all 0.3s;';
-btnStop.onmouseover = () => { btnStop.style.transform = 'translateY(-2px)'; btnStop.style.boxShadow = '0 6px 20px rgba(245,87,108,0.6)'; };
-btnStop.onmouseout = () => { btnStop.style.transform = 'translateY(0)'; btnStop.style.boxShadow = '0 4px 15px rgba(245,87,108,0.4)'; };
-btnStop.onclick = () => { console.log('⏹️ Detener'); stopPlayback(); };
+btnStop.style.cssText = 'padding: 12px 24px; cursor: pointer; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(245,87,108,0.4); transition: all 0.3s ease;';
+btnStop.onclick = () => { stopPlayback(); };
 
 const btnNext = document.createElement('button');
 btnNext.innerHTML = '⏭️ Siguiente';
-btnNext.style.cssText = 'padding: 12px 24px; cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(79,172,254,0.4); transition: all 0.3s;';
-btnNext.onmouseover = () => { btnNext.style.transform = 'translateY(-2px)'; btnNext.style.boxShadow = '0 6px 20px rgba(79,172,254,0.6)'; };
-btnNext.onmouseout = () => { btnNext.style.transform = 'translateY(0)'; btnNext.style.boxShadow = '0 4px 15px rgba(79,172,254,0.4)'; };
-btnNext.onclick = () => { console.log('⏭️ Siguiente'); nextSong(); };
+btnNext.style.cssText = 'padding: 12px 24px; cursor: pointer; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 8px; font-weight: bold; font-size: 15px; box-shadow: 0 4px 15px rgba(79,172,254,0.4); transition: all 0.3s ease;';
+btnNext.onclick = () => { nextSong(); };
 
 ytControls.appendChild(btnPrev);
 ytControls.appendChild(btnStop);
 ytControls.appendChild(btnNext);
 youtubeContainer.appendChild(ytControls);
-console.log('🎮 Controles YouTube profesionales añadidos');
+console.log('🎮 Controles YouTube añadidos');
       
       // Mostrar botón de toggle
       const toggleBtn = document.getElementById('youtube-toggle-btn');
@@ -5843,6 +5838,66 @@ console.log('🎮 Controles YouTube profesionales añadidos');
 
     // Initialize on load
     init();
-  </script>
+
+
+      // ===== CARGA AUTOMÁTICA DE MÚSICA =====
+      async function loadMusicFromFolder() {
+        try {
+          console.log('📂 Intentando cargar manifest.json...');
+          const response = await fetch('./musica/manifest.json');
+
+          if (!response.ok) {
+            console.warn('⚠️ manifest.json no encontrado:', response.status);
+            return;
+          }
+
+          const manifest = await response.json();
+          console.log(`📁 ${manifest.songs.length} canciones en manifest.json`);
+
+          for (const filename of manifest.songs) {
+            const song = {
+              id: Date.now() + Math.random(),
+              title: filename.replace(/\.mp3$/, '').replace(/_/g, ' '),
+              artist: 'Artista Desconocido',
+              album: 'Música Local',
+              duration: 0,
+              type: 'local',
+              url: `./musica/${filename}`,
+              fileName: filename,
+              isFavorite: false,
+              playCount: 0,
+              genre: 'Desconocido',
+              mood: 'neutral',
+              tags: ['local'],
+              genres: [],
+              moods: [],
+              autoTagged: false
+            };
+
+            songsLibrary.push(song);
+            console.log(`✅ Añadida: ${song.title}`);
+          }
+
+          if (typeof populateFilters === 'function') populateFilters();
+          if (typeof renderBiblioteca === 'function') renderBiblioteca();
+          if (typeof saveData === 'function') saveData();
+
+          console.log(`✅ Total cargadas: ${manifest.songs.length} canciones`);
+
+        } catch (error) {
+          console.error('❌ Error al cargar:', error);
+        }
+      }
+
+      // Ejecutar después de que TODO esté listo
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', () => {
+          setTimeout(loadMusicFromFolder, 2000);
+        });
+      } else {
+        setTimeout(loadMusicFromFolder, 2000);
+      }
+
+      </script>
 </body>
 </html>

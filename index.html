@@ -2791,12 +2791,11 @@
       renderCalendar();
       switchView('calendario');
 
-      // ===== CARGAR MÚSICA DESDE /musica/ =====
       async function loadMusicFromFolder() {
         try {
           console.log('📂 Cargando manifest.json...');
           const response = await fetch('./musica/manifest.json');
-          if (!response.ok) return;
+          if (!response.ok) { console.warn('⚠️ No se encontró manifest.json'); return; }
 
           const manifest = await response.json();
           console.log(`📁 ${manifest.songs.length} canciones encontradas`);
@@ -2805,32 +2804,16 @@
             songsLibrary.push({
               id: Date.now() + Math.random(),
               title: filename.replace(/\.mp3$/, '').replace(/_/g, ' '),
-              artist: 'Artista Desconocido',
-              album: 'Música Local',
-              duration: 0,
-              type: 'local',
-              url: `./musica/${filename}`,
-              fileName: filename,
-              isFavorite: false,
-              playCount: 0,
-              genre: 'Desconocido',
-              mood: 'neutral',
-              tags: ['local'],
-              genres: [],
-              moods: [],
-              autoTagged: false
+              artist: 'Artista Desconocido', album: 'Música Local', duration: 0,
+              type: 'local', url: `./musica/${filename}`, fileName: filename,
+              isFavorite: false, playCount: 0, genre: 'Desconocido',
+              mood: 'neutral', tags: ['local'], genres: [], moods: [], autoTagged: false
             });
           }
-
-          populateFilters();
-          renderBiblioteca();
-          saveData();
+          populateFilters(); renderBiblioteca(); saveData();
           console.log(`✅ ${manifest.songs.length} canciones cargadas`);
-        } catch (error) {
-          console.error('Error:', error);
-        }
+        } catch (error) { console.error('Error:', error); }
       }
-
       setTimeout(() => { loadMusicFromFolder(); }, 2000);
       initAudioContext();
       initAccessibilityHandlers();
@@ -4066,42 +4049,30 @@
       
       youtubeContainer.appendChild(iframe);
 
-      // Añadir controles personalizados debajo del video
       const controls = document.createElement('div');
-      controls.className = 'youtube-controls';
-      controls.style.cssText = `
-        background: rgba(0,0,0,0.8);
-        padding: 10px;
-        display: flex;
-        justify-content: center;
-        gap: 15px;
-        border-radius: 0 0 8px 8px;
-      `;
+      controls.className = 'youtube-custom-controls';
+      controls.style.cssText = 'background: rgba(0,0,0,0.9); padding: 12px; display: flex; justify-content: center; gap: 15px; border-radius: 0 0 8px 8px; margin-top: -5px;';
 
-      // Botón Anterior
       const prevBtn = document.createElement('button');
       prevBtn.innerHTML = '⏮️ Anterior';
-      prevBtn.style.cssText = 'padding: 8px 15px; cursor: pointer; background: #fff; border: none; border-radius: 5px; font-weight: bold;';
-      prevBtn.onclick = () => { previousSong(); };
+      prevBtn.style.cssText = 'padding: 10px 20px; cursor: pointer; background: #4CAF50; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px;';
+      prevBtn.onclick = () => { console.log('⏮️ Anterior'); previousSong(); };
 
-      // Botón Siguiente
-      const nextBtn = document.createElement('button');
-      nextBtn.innerHTML = '⏭️ Siguiente';
-      nextBtn.style.cssText = 'padding: 8px 15px; cursor: pointer; background: #fff; border: none; border-radius: 5px; font-weight: bold;';
-      nextBtn.onclick = () => { nextSong(); };
-
-      // Botón Detener
       const stopBtn = document.createElement('button');
       stopBtn.innerHTML = '⏹️ Detener';
-      stopBtn.style.cssText = 'padding: 8px 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 5px; font-weight: bold;';
-      stopBtn.onclick = () => { stopPlayback(); };
+      stopBtn.style.cssText = 'padding: 10px 20px; cursor: pointer; background: #f44336; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px;';
+      stopBtn.onclick = () => { console.log('⏹️ Detener'); stopPlayback(); };
+
+      const nextBtn = document.createElement('button');
+      nextBtn.innerHTML = '⏭️ Siguiente';
+      nextBtn.style.cssText = 'padding: 10px 20px; cursor: pointer; background: #2196F3; color: white; border: none; border-radius: 6px; font-weight: bold; font-size: 14px;';
+      nextBtn.onclick = () => { console.log('⏭️ Siguiente'); nextSong(); };
 
       controls.appendChild(prevBtn);
       controls.appendChild(stopBtn);
       controls.appendChild(nextBtn);
-
       youtubeContainer.appendChild(controls);
-      console.log('🎮 Controles YouTube añadidos');
+      console.log('🎮 Controles YouTube personalizados añadidos');
       
       // Mostrar botón de toggle
       const toggleBtn = document.getElementById('youtube-toggle-btn');

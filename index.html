@@ -2791,17 +2791,19 @@
       renderCalendar();
       switchView('calendario');
 
-      // ===== CARGAR MÚSICA DESDE CARPETA /musica/ =====
+      // ===== CARGAR MÚSICA DESDE /musica/ =====
       async function loadMusicFromFolder() {
         try {
-          const response = await fetch('/musica/manifest.json');
+          console.log('📂 Intentando cargar manifest.json...');
+          const response = await fetch('./musica/manifest.json');
+
           if (!response.ok) {
-            console.log('⚠️ No se encontró manifest.json en /musica/');
+            console.warn('⚠️ No se encontró manifest.json:', response.status);
             return;
           }
 
           const manifest = await response.json();
-          console.log(`📁 Cargando ${manifest.songs.length} canciones desde /musica/`);
+          console.log(`📁 Manifest cargado: ${manifest.songs.length} canciones`);
 
           for (const filename of manifest.songs) {
             const song = {
@@ -2811,7 +2813,7 @@
               album: 'Música Local',
               duration: 0,
               type: 'local',
-              url: `/musica/${filename}`,
+              url: `./musica/${filename}`,
               fileName: filename,
               isFavorite: false,
               playCount: 0,
@@ -2824,23 +2826,22 @@
             };
 
             songsLibrary.push(song);
+            console.log(`✅ Añadida: ${song.title}`);
           }
 
           populateFilters();
           renderBiblioteca();
           saveData();
 
-          console.log(`✅ Canciones cargadas desde /musica/: ${manifest.songs.length}`);
+          console.log(`✅ Total: ${manifest.songs.length}`);
+          alert(`✅ ${manifest.songs.length} canciones cargadas desde /musica/`);
 
         } catch (error) {
-          console.log('ℹ️ No se pudo cargar música desde /musica/:', error.message);
+          console.error('❌ Error:', error);
         }
       }
 
-      // Llamar al cargar la página
-      setTimeout(() => {
-        loadMusicFromFolder();
-      }, 1000);
+      setTimeout(() => { loadMusicFromFolder(); }, 2000);
       initAudioContext();
       initAccessibilityHandlers();
     }
@@ -3321,7 +3322,7 @@
         
         // Solo etiquetar si no está ya etiquetada
         if (!song.autoTagged) {
-          // const success = await autoTagSong(song); // Deshabilitado - Last.fm 403
+          // const success = await autoTagSong(song);
           if (success) tagged++;
           
           // Actualizar progreso
@@ -3376,7 +3377,7 @@
       for (let i = 0; i < songsToTag.length; i++) {
         const song = songsToTag[i];
         
-        // const success = await autoTagSong(song); // Deshabilitado - Last.fm 403
+        // const success = await autoTagSong(song);
         // if (success) tagged++;
         
         const progressCount = document.getElementById('progress-count');
@@ -3878,7 +3879,7 @@
         
         // Auto-etiquetar la canción de YouTube
         console.log('🏷️ Etiquetando automáticamente...');
-        // await autoTagSong(song); // Deshabilitado - Last.fm 403
+        // await autoTagSong(song);
         
         console.log('✅ Canción de YouTube añadida y etiquetada:', song.title);
         announce(`Canción añadida: ${song.title} por ${song.artist}`);
@@ -4044,7 +4045,7 @@
       // Pausar reproductor HTML5 si está activo
       if (audioElement) {
         audioElement.pause();
-        // audioElement.src = ''; // Comentado para evitar MediaLoadInvalidURI
+        // audioElement.src = ''; // Comentado
       }
       
       // Crear o actualizar contenedor del iframe
@@ -4069,7 +4070,7 @@
       iframe.frameBorder = '0';
       
       // Sandbox con permisos completos
-      // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms'); // ELIMINADO
+      // iframe.setAttribute('sandbox', ...); // ELIMINADO
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
       iframe.allowFullscreen = true;
       
@@ -4139,7 +4140,7 @@
       if (audioPlayer) {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
-        // audioPlayer.src = ''; // Comentado para evitar error
+        // audioPlayer.src = ''; // Comentado
       }
       
       // Detener YouTube
@@ -4334,7 +4335,6 @@
       updateTimeDisplay();
       updateProgressBar();
       
-      // Ocultar mini-player para YouTube, mostrar solo para locales
       const miniPlayer = document.getElementById('miniPlayer');
       if (miniPlayer && currentSong) {
         if (currentSong.type === 'youtube') {

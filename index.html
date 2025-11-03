@@ -3993,7 +3993,7 @@
       // Pausar reproductor HTML5 si está activo
       if (audioElement) {
         audioElement.pause();
-        // audioElement.src = ''; // Comentado
+        audioElement.src = ''; // Comentado para evitar error
       }
       
       // Crear o actualizar contenedor del iframe
@@ -4018,7 +4018,7 @@
       iframe.frameBorder = '0';
       
       // Sandbox con permisos completos
-      // iframe.setAttribute('sandbox', ...); // ELIMINADO
+      // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms'); // ELIMINADO
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
       iframe.allowFullscreen = true;
       
@@ -4026,22 +4026,18 @@
 
 const ytControls = document.createElement('div');
 ytControls.style.cssText = 'background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 15px; display: flex; justify-content: center; gap: 15px; border-radius: 0 0 10px 10px;';
-
 const btnPrev = document.createElement('button');
 btnPrev.innerHTML = '⏮️ Anterior';
 btnPrev.style.cssText = 'padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;';
 btnPrev.onclick = () => previousSong();
-
 const btnStop = document.createElement('button');
 btnStop.innerHTML = '⏹️ Detener';
 btnStop.style.cssText = 'padding: 10px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;';
 btnStop.onclick = () => stopPlayback();
-
 const btnNext = document.createElement('button');
 btnNext.innerHTML = '⏭️ Siguiente';
 btnNext.style.cssText = 'padding: 10px 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;';
 btnNext.onclick = () => nextSong();
-
 ytControls.appendChild(btnPrev);
 ytControls.appendChild(btnStop);
 ytControls.appendChild(btnNext);
@@ -4111,7 +4107,7 @@ youtubeContainer.appendChild(ytControls);
       if (audioPlayer) {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
-        // audioPlayer.src = ''; // Comentado
+        audioPlayer.src = ''; // Comentado para evitar error
       }
       
       // Detener YouTube
@@ -5054,7 +5050,7 @@ youtubeContainer.appendChild(ytControls);
       if (songsLibrary.length === 0) {
         alert('⚠️ No se encontraron archivos de audio en la carpeta seleccionada.');
       } else {
-        alert(`✅ Se cargaron ${songsLibrary.length} canciones correctamente.`);
+        alert(`✅ Se cargaron ${songsLibrary.length} canciones correctamente.\n\n🏷️ Etiquetando automáticamente...`);
         
         // Auto-etiquetar todas las canciones recién añadidas
         // autoTagNewSongs();

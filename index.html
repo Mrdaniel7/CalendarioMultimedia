@@ -20,7 +20,7 @@
 [data-color-scheme="light"]{
   --bg:#f8fafc; --surface:#ffffff; --surface-2:#f1f5f9; --text:#0f172a; --text-2:#475569; --primary:#0ea5e9; --primary-2:#0284c7; --border:#e5e7eb;
 }
-/* Temas (estética completa) */
+/* Temas (cambian estética completa) */
 [data-theme="normal"]    { --bg-image:none; --shape:12px; }
 [data-theme="retro"]     { --primary:#f59e0b; --primary-2:#d97706; --bg-image:url('https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=1600&auto=format&fit=crop'); --shape:8px; }
 [data-theme="naturaleza"]{ --primary:#16a34a; --primary-2:#15803d; --bg-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop'); --shape:18px; }
@@ -101,8 +101,6 @@ body{
 .calendar-wrap{display:grid;grid-template-columns:1fr 340px;gap:12px}
 .agenda{padding:12px;display:flex;flex-direction:column}
 .agenda h3{margin:6px 0 12px}
-#agenda{display:flex;flex-direction:column;gap:8px;max-height:360px;overflow-y:auto;padding-right:4px}
-/* Bloque superior: 5 elementos */
 #agenda-top{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
 #agenda-rest{max-height:240px;overflow:auto}
 
@@ -137,7 +135,6 @@ body{
           <button class="btn" data-theme="normal">Normal</button>
           <button class="btn" data-theme="retro">Retro</button>
           <button class="btn" data-theme="naturaleza">Naturaleza</button>
-          <button class="="></button><!-- evita warnings -->
           <button class="btn" data-theme="industrial">Industrial</button>
           <button class="btn" data-theme="ciberpunk">Ciberpunk</button>
           <button class="btn" data-theme="oceano">Océano</button>
@@ -206,7 +203,6 @@ body{
         </div>
         <aside class="agenda panel">
           <h3>📌 Agenda (últimos 30 días)</h3>
-          <!-- muestra 5 arriba + resto con scrollbar -->
           <div id="agenda-top"></div>
           <div id="agenda-rest"></div>
           <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
@@ -306,10 +302,17 @@ const U={ q:s=>document.querySelector(s), qa:s=>document.querySelectorAll(s),
   el:(t,a={})=>{const e=document.createElement(t);for(const[k,v]of Object.entries(a))e.setAttribute(k,v);return e;},
   fmt:s=>{s=Math.max(0,s||0);const m=Math.floor(s/60),sec=Math.floor(s%60);return m+':'+String(sec).padStart(2,'0');}
 };
-const state={ view:'cal', colorScheme:localStorage.getItem('scheme')||'dark', theme:localStorage.getItem('theme')||'normal',
-  songs:JSON.parse(localStorage.getItem('songs')||'[]'), idx:-1, shuffle:false, repeat:'none', volume:.7,
-  yt:{player:null,visible:false,timer:null}, a11y:{aria:true}, events:JSON.parse(localStorage.getItem('events')||'[]'),
-  playlists:JSON.parse(localStorage.getItem('playlists')||'[]'), sleepMin:0, autoplayNext:true
+function safeParse(json,def){ try{return JSON.parse(json);}catch{return def;} }
+
+const state={ view:'cal',
+  colorScheme:localStorage.getItem('scheme')||'dark',
+  theme:localStorage.getItem('theme')||'normal',
+  songs:safeParse(localStorage.getItem('songs'),'[]'),
+  idx:-1, shuffle:false, repeat:'none', volume:.7,
+  yt:{player:null,visible:false,timer:null}, a11y:{aria:true},
+  events:safeParse(localStorage.getItem('events'),'[]'),
+  playlists:safeParse(localStorage.getItem('playlists'),'[]'),
+  sleepMin:0, autoplayNext:true
 };
 function applyScheme(){ document.documentElement.setAttribute('data-color-scheme',state.colorScheme); localStorage.setItem('scheme',state.colorScheme); }
 function applyTheme(){ document.documentElement.setAttribute('data-theme',state.theme); localStorage.setItem('theme',state.theme); }
@@ -747,6 +750,15 @@ function renderTasks(){
   cont.innerHTML=lst.map(e=>`<div class="panel" style="padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><b>${e.title}</b> · ${e.date}${e.time?' · '+e.time:''}</div><button class="btn" data-done="${e.id}">Marcar</button></div>`).join('') || '<div class="panel" style="padding:8px">Sin tareas pendientes</div>';
   cont.querySelectorAll('[data-done]').forEach(b=>b.addEventListener('click',e=>toggleDone(e.currentTarget.getAttribute('data-done'))));
 }
+
+/* Botón “Añadir rápido” (tarea hoy +1h) */
+U.q('#quick-add').addEventListener('click',()=>{
+  const t=prompt('Título de la tarea'); if(!t) return;
+  const d=new Date(); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  const time=`${String((d.getHours()+1)%24).padStart(2,'0')}:00`;
+  state.events.push({id:'ev-'+Date.now(), title:t, type:'task', time, priority:3, done:false, date:key});
+  saveEvents(); renderCalendar();
+});
 
 /* Precarga: si no hay eventos, crea últimos 20 y próximos 20 */
 (function seedAround(){

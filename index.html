@@ -2798,12 +2798,12 @@
           const response = await fetch('./musica/manifest.json');
 
           if (!response.ok) {
-            console.warn('⚠️ No se encontró manifest.json:', response.status);
+            console.warn('⚠️ No se encontró manifest.json');
             return;
           }
 
           const manifest = await response.json();
-          console.log(`📁 Manifest cargado: ${manifest.songs.length} canciones`);
+          console.log(`📁 Cargando ${manifest.songs.length} canciones`);
 
           for (const filename of manifest.songs) {
             const song = {
@@ -2826,15 +2826,12 @@
             };
 
             songsLibrary.push(song);
-            console.log(`✅ Añadida: ${song.title}`);
           }
 
           populateFilters();
           renderBiblioteca();
           saveData();
-
-          console.log(`✅ Total: ${manifest.songs.length}`);
-          alert(`✅ ${manifest.songs.length} canciones cargadas desde /musica/`);
+          console.log(`✅ ${manifest.songs.length} canciones cargadas`);
 
         } catch (error) {
           console.error('❌ Error:', error);
@@ -4334,17 +4331,6 @@
       document.getElementById('miniPlayerArtist').textContent = currentSong.artist;
       updateTimeDisplay();
       updateProgressBar();
-      
-      const miniPlayer = document.getElementById('miniPlayer');
-      if (miniPlayer && currentSong) {
-        if (currentSong.type === 'youtube') {
-          miniPlayer.style.opacity = '0.3';
-          miniPlayer.style.pointerEvents = 'none';
-        } else {
-          miniPlayer.style.opacity = '1';
-          miniPlayer.style.pointerEvents = 'auto';
-        }
-      }
     }
 
     function updateProgressBar() {

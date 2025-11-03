@@ -350,24 +350,25 @@ function switchView(v){
   if(v==='cal') renderCalendar(); if(v==='lib') renderSongs(); if(v==='pls') renderPlaylists(); if(v==='tsk') renderTasks();
 }
 
-/* GitHub */
+/* GitHub (carga inicial) */
 const GITHUB={ owner:'mrdaniel7', repo:'CalendarioMultimedia', branch:'main', folder:'musica' };
 async function fetchGitHubSongs(){
   try{
     const api=`https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.folder}?ref=${GITHUB.branch}`;
     const r=await fetch(api); if(!r.ok) return [];
     const files=await r.json(); const exts=['.mp3','.wav','.flac','.ogg','.m4a'];
-    return files.filter(f=>f.type==='file' && exts.some(x=>f.name.toLowerCase().endsWith(x))).map(f=>({
-      id:Date.now()+Math.random(),
-      title:f.name.replace(/\.[^/.]+$/,''), artist:GITHUB.owner, album:'GitHub Repository', type:'github',
-      fileUrl:`https://raw.githubusercontent.com/${GITHUB.owner}/${GITHUB.repo}/${GITHUB.branch}/${GITHUB.folder}/${f.name}`,
-      cover:null, genres:[], moods:[], date:new Date().toISOString()
-    }));
+    return files
+      .filter(f=>f.type==='file' && exts.some(x=>f.name.toLowerCase().endsWith(x)))
+      .map(f=>({
+        id:Date.now()+Math.random(),
+        title:f.name.replace(/\.[^/.]+$/,''), artist:GITHUB.owner, album:'GitHub Repository', type:'github',
+        fileUrl:`https://raw.githubusercontent.com/${GITHUB.owner}/${GITHUB.repo}/${GITHUB.branch}/${GITHUB.folder}/${f.name}`,
+        cover:null, genres:[], moods:[], date:new Date().toISOString()
+      }));
   }catch{ return []; }
 }
 
 /* ====== Portadas: garantía + búsqueda real ====== */
-// Placeholder SVG local con iniciales (nunca falla)
 function svgPlaceholderFor(song){
   const title=(song.title||'').trim();
   const artist=(song.artist||'').trim();
@@ -386,34 +387,21 @@ function svgPlaceholderFor(song){
    </svg>`;
   return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
 }
-// Fallback temático (si hay red) — solo como mejora
 function unsplashFallback(song){
   const tag=(song.genres?.[0]||song.moods?.[0]||song.title||'music').toString().toLowerCase();
   return `https://source.unsplash.com/featured/512x512?${encodeURIComponent(tag)}`;
 }
-// Siempre asigna algo visible al instante
 function ensureCoverGuaranteed(song){
   if(!song.cover) song.cover = svgPlaceholderFor(song);
 }
-// Busca miniatura "realista" usando YouTube (lo más parecido a “buscar en Google”) y mejora si puede
 async function ensureCoverViaSearch(song){
-  // Si ya tenemos una portada buena (no SVG ni Unsplash), no tocar
   if(song.cover && !song.cover.startsWith('data:image/svg') && !song.cover.startsWith('https://source.unsplash.com')) return;
-
-  // 1) Si es de YouTube, usa su thumbnail
   if(song.youtubeId){ song.cover=`https://img.youtube.com/vi/${song.youtubeId}/mqdefault.jpg`; return; }
-
-  // 2) Intentar encontrar el vídeo más relevante en YouTube por título+artista
   const query=((song.artist||'')+' '+(song.title||'')).trim() || (song.title||song.artist||'');
-  const y1=await fetchYTThumbPiped(query);
-  if(y1){ song.cover=y1; return; }
-  const y2=await fetchYTThumbInv(query);
-  if(y2){ song.cover=y2; return; }
-
-  // 3) Si no hubo suerte, mejorar con imagen temática
+  const y1=await fetchYTThumbPiped(query); if(y1){ song.cover=y1; return; }
+  const y2=await fetchYTThumbInv(query);  if(y2){ song.cover=y2; return; }
   song.cover = unsplashFallback(song);
 }
-// Buscadores públicos de YouTube (sin clave)
 async function fetchYTThumbPiped(query){
   if(!query) return null;
   try{
@@ -446,8 +434,7 @@ function updateMini(s){
   U.q('#p-artist').textContent=s?.artist||'';
   const c=U.q('#p-cover'); c.innerHTML='';
   const src = s?.cover || svgPlaceholderFor(s||{});
-  const img=new Image(); img.src=src; img.alt=s?.title||'';
-  img.crossOrigin='anonymous';
+  const img=new Image(); img.src=src; img.alt=s?.title||''; img.crossOrigin='anonymous';
   img.onerror=()=>{ img.src = svgPlaceholderFor(s); };
   c.appendChild(img);
 }
@@ -498,7 +485,6 @@ function playIndex(i){
 
   if(s.type==='youtube'){
     ensureYT(s); U.q('#play').textContent='⏸️';
-    // vídeo minimizado por defecto
     U.q('#yt').classList.remove('visible'); state.yt.visible=false; U.q('#yt-toggle').textContent='📺';
   } else {
     audio.src = s.blob ? URL.createObjectURL(s.blob) : (s.fileUrl||'');
@@ -556,7 +542,6 @@ U.q('#m-yt-cancel').addEventListener('click',()=>{ U.q('#yt-inline').style.displ
 
 U.q('#m-yt-save').addEventListener('click',async()=>{
   const url=U.q('#m-yt-url').value.trim(); const id=url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([^&\n?#]+)/)?.[1]; if(!id) return alert('URL inválida');
-  // oEmbed para título y autor (nombre y canal)
   let realTitle='',realAuthor='';
   try{ const r=await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
        if(r.ok){ const j=await r.json(); realTitle=j.title||''; realAuthor=j.author_name||''; } }catch{}
@@ -564,8 +549,8 @@ U.q('#m-yt-save').addEventListener('click',async()=>{
             artist:(U.q('#m-yt-artist').value||realAuthor||'YouTube').trim(),
             type:'youtube', youtubeId:id, cover:`https://img.youtube.com/vi/${id}/mqdefault.jpg`,
             genres:[], moods:[], album:'YouTube' };
-  ensureCoverGuaranteed(s);      // 1) Imagen inmediata
-  await classifyAndCover(s);     // 2) Mejora si puede
+  ensureCoverGuaranteed(s);
+  await classifyAndCover(s);
   state.songs.push(s); persistSongs(); renderSongs();
   U.q('#yt-inline').style.display='none'; U.q('#m-yt-url').value=''; U.q('#m-yt-title').value=''; U.q('#m-yt-artist').value='';
 });
@@ -576,9 +561,9 @@ async function handleFiles(files){
     const base=file.name.replace(/\.[^/.]+$/,'');
     const s={ id:Date.now()+Math.random(), title:base, artist:'Desconocido', album:'Archivo Local',
               type:'local', blob=file, cover:null, genres:[], moods:[], fileName:file.name, date:new Date().toISOString() };
-    ensureCoverGuaranteed(s);      // portada inmediata (SVG)
-    await extractMetadata(s);      // intenta leer título/autor/imagen del ID3
-    await classifyAndCover(s);     // intenta miniatura YouTube por búsqueda y deja algo coherente
+    ensureCoverGuaranteed(s);
+    await extractMetadata(s);
+    await classifyAndCover(s);
     state.songs.push(s);
   }
   persistSongs(); renderSongs();
@@ -669,12 +654,11 @@ function renderSongs(){
 
   populateFilters();
 
-  // Mejora en caliente de portadas (pasar de SVG a thumbnail si aparece)
+  // Mejora en caliente de portadas (de SVG a thumbnail si aparece)
   list.forEach(async s=>{
     if(!s.cover || s.cover.startsWith('data:image/svg')){
       await ensureCoverViaSearch(s);
       persistSongs();
-      // no forzamos re-render para no parpadear; próxima vez se verá
     }
   });
 }
@@ -791,23 +775,51 @@ U.q('#event-search').addEventListener('input',e=>{ const q=(e.target.value||'').
 
 /* Vista de tareas */
 function renderTasks(){
-  const cont=U.q('#tasks-list'); const lst=[...state.events].filter(e=>e.type==='task'&&!e.done).sort((a,b)=>(new Date(a.date)-new Date(b.date))||((b.priority||1)-(a.priority||1)));
+  const cont=U.q('#tasks-list'); if(!cont) return;
+  const lst=[...state.events].filter(e=>e.type==='task'&&!e.done).sort((a,b)=>(new Date(a.date)-new Date(b.date))||((b.priority||1)-(a.priority||1)));
   cont.innerHTML=lst.map(e=>`<div class="panel" style="padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center"><div><b>${e.title}</b> · ${e.date}${e.time?' · '+e.time:''}</div><button class="btn" data-done="${e.id}">Marcar</button></div>`).join('') || '<div class="panel" style="padding:8px">Sin tareas pendientes</div>';
   cont.querySelectorAll('[data-done]').forEach(b=>b.addEventListener('click',e=>toggleDone(e.currentTarget.getAttribute('data-done'))));
 }
+
+/* === Handlers faltantes que podían romper la app === */
+U.q('#quick-add').addEventListener('click',()=>{
+  const now=new Date();
+  const key=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}-${String(now.getDate()).padStart(2,'0')}`;
+  const ev={ id:'ev-'+Date.now(), title:'Tarea rápida', type:'task', time:'', priority:2, done:false, date:key };
+  state.events.push(ev); saveEvents(); renderAgenda(); renderCalendar(); renderTasks();
+});
+U.q('#btn-export').addEventListener('click',()=>{
+  const data={ events:state.events, songs:state.songs, playlists:state.playlists, scheme:state.colorScheme, theme:state.theme };
+  const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='cm-backup.json'; a.click();
+  URL.revokeObjectURL(a.href);
+});
+U.q('#btn-import').addEventListener('click',()=>U.q('#import-file').click());
+U.q('#import-file').addEventListener('change', async (e)=>{
+  const f=e.target.files?.[0]; if(!f) return;
+  try{
+    const text=await f.text(); const data=JSON.parse(text);
+    if(Array.isArray(data.events)) state.events=data.events;
+    if(Array.isArray(data.songs)) state.songs=data.songs;
+    if(Array.isArray(data.playlists)) state.playlists=data.playlists;
+    if(data.scheme) state.colorScheme=data.scheme; if(data.theme) state.theme=data.theme;
+    applyScheme(); applyTheme();
+    saveEvents(); persistSongs(); savePlaylists();
+    renderCalendar(); renderAgenda(); renderSongs(); renderPlaylists(); renderTasks();
+  }catch(err){ alert('Archivo inválido'); }
+  e.target.value='';
+});
 
 /* Precarga de eventos (pasado y futuro) si no hay nada */
 (function seedAround(){
   if(state.events.length>0) return;
   const now=new Date();
-  // últimos 20 (pasado)
   for(let i=1;i<=20;i++){
     const d=new Date(now); d.setDate(now.getDate()-i); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     if(i%5===0) state.events.push({id:'evp-'+Date.now()+i,title:'Cumpleaños (pasado) '+i,type:'birthday',time:'',priority:1,done:!!(i%4===0),date:key});
     if(i%2===0) state.events.push({id:'evp-'+Date.now()+'a'+i,title:'Estudiar (pasado) tema '+i,type:'task',time:'18:00',priority:3,done:!!(i%3===0),date:key});
     if(i%3===0) state.events.push({id:'evp-'+Date.now()+'n'+i,title:'Nota (pasado) '+i,type:'note',time:'',priority:2,done:false,date:key});
   }
-  // próximos 20 (futuro)
   for(let i=1;i<=20;i++){
     const d=new Date(now); d.setDate(now.getDate()+i); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
     if(i%5===0) state.events.push({id:'evf-'+Date.now()+i,title:'Cumple de Amig@ '+i,type:'birthday',time:'',priority:1,done:false,date:key});
@@ -825,13 +837,12 @@ function renderTasks(){
     for(const s of gh){
       const key=s.type+'|'+(s.fileUrl||s.youtubeId||s.title);
       if(!seen.has(key)){
-        ensureCoverGuaranteed(s);        // portada inmediata
-        await classifyAndCover(s);       // mejora si puede (YouTube search)
+        ensureCoverGuaranteed(s);
+        await classifyAndCover(s);
         state.songs.push(s);
       }
     }
   }catch{}
-  // Reforzar todo el catálogo
   for(const s of state.songs){
     if(!s.genres?.length || s.genres.length<2 || !s.moods?.length || s.moods.length<3) autoTagSong(s);
     ensureCoverGuaranteed(s);
@@ -847,6 +858,9 @@ document.addEventListener('keydown',e=>{
   if(e.code==='ArrowRight' && state.idx>=0){ e.preventDefault(); U.q('#next').click(); }
   if(e.code==='ArrowLeft' && state.idx>=0){ e.preventDefault(); U.q('#prev').click(); }
 });
+
+/* Guardas por si alguna referencia falta en el DOM en algún momento (defensivo) */
+function savePlaylists(){ localStorage.setItem('playlists', JSON.stringify(state.playlists)); }
 </script>
 </body>
 </html>

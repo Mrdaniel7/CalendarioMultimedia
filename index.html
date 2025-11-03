@@ -1,809 +1,1050 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Reproductor Musical Pro</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
-  <script async src="https://www.youtube.com/iframe_api"></script>
-  <style>
-    /* ====== SISTEMA DE DISEÑO: base sólida, alto contraste legible ====== */
-    :root{
-      --bg: #0f172a;              /* slate-900 */
-      --surface: #111827;         /* gray-900 */
-      --surface-2:#1f2937;        /* gray-800 */
-      --text: #e5e7eb;            /* gray-200 */
-      --text-2:#9ca3af;           /* gray-400 */
-      --primary:#22d3ee;          /* cyan-400 */
-      --primary-2:#06b6d4;        /* cyan-500 */
-      --border: #374151;          /* gray-700 */
-      --card-bg:#0b1220;          /* sólido (sin blur) */
-      --radius: 12px;
-      --focus: 3px solid rgba(34,211,238,.6);
-      --shadow: 0 8px 32px rgba(0,0,0,.35);
-      --bg-image: none;           /* cada tema la sobrescribe */
-    }
-    [data-color-scheme="light"]{
-      --bg: #f8fafc;              /* slate-50 */
-      --surface: #ffffff;         /* blanco */
-      --surface-2:#f3f4f6;        /* gray-100 */
-      --text: #0f172a;            /* slate-900 */
-      --text-2:#475569;           /* slate-600 */
-      --primary:#0891b2;          /* cyan-700 */
-      --primary-2:#0e7490;        /* cyan-800 */
-      --border: #e5e7eb;          /* gray-200 */
-      --card-bg:#ffffff;          /* sólido */
-    }
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Reproductor Musical Pro</title>
 
-    /* ====== TEMAS (estética + fondos de internet) ====== */
-    /* Imágenes libres (Unsplash). Puedes sustituir por otras si prefieres. */
-    [data-theme="retro"]{      --primary:#f59e0b; --primary-2:#d97706; --bg-image:url('https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="naturaleza"]{ --primary:#16a34a; --primary-2:#15803d; --bg-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="industrial"]{ --primary:#9ca3af; --primary-2:#6b7280; --bg-image:url('https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="ciberpunk"]{  --primary:#a21caf; --primary-2:#7e22ce; --bg-image:url('https://images.unsplash.com/photo-1535223289827-42f1e9919769?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="oceano"]{     --primary:#0284c7; --primary-2:#0369a1; --bg-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="bosque"]{     --primary:#0f766e; --primary-2:#115e59; --bg-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="vaporwave"]{  --primary:#f472b6; --primary-2:#e879f9; --bg-image:url('https://images.unsplash.com/photo-1520975922284-7b683d4b0f0d?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="años20"]{     --primary:#b45309; --primary-2:#92400e; --bg-image:url('https://images.unsplash.com/photo-1499363536502-87642509e31b?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="minimal"]{    --primary:#111827; --primary-2:#0b1220; --bg-image:url('https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=1600&auto=format&fit=crop'); }
-    [data-theme="ciudad"]{     --primary:#ef4444; --primary-2:#b91c1c; --bg-image:url('https://images.unsplash.com/photo-1439405326854-014607f694d7?q=80&w=1600&auto=format&fit=crop'); }
+<!-- Metadatos/ID3 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jsmediatags/3.9.5/jsmediatags.min.js"></script>
+<!-- YouTube IFrame API -->
+<script async src="https://www.youtube.com/iframe_api"></script>
+<!-- OpenDyslexic para modo dislexia -->
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/antijingoist/open-dyslexic/alternatives/OpenDyslexicAlta-Regular.otf" rel="preload" as="font" type="font/otf" crossorigin>
 
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family: system-ui, -apple-system, Segoe UI, Inter, Roboto, Arial, sans-serif;
-      background: var(--bg) no-repeat center/cover fixed; color: var(--text);
-      background-image: var(--bg-image);
-    }
+<style>
+/* ================== SISTEMA DE DISEÑO BASE ================== */
+:root{
+  /* Base oscura por defecto */
+  --bg: #0f172a;                /* slate-900 */
+  --surface: #111827;           /* gray-900 */
+  --surface-2:#1f2937;          /* gray-800 */
+  --text: #e5e7eb;              /* gray-200 */
+  --text-2:#94a3b8;             /* slate-400 */
+  --primary:#22d3ee;            /* cyan-400 */
+  --primary-2:#06b6d4;          /* cyan-500 */
+  --border: #334155;            /* slate-700 */
+  --card:#0b1220;
+  --radius: 12px;
+  --focus: 3px solid rgba(34,211,238,.6);
+  --shadow: 0 10px 30px rgba(0,0,0,.35);
+  --bg-image: none;             /* Tema “normal” sin imagen */
+  --shape: 10px;                /* Forma base de tarjetas/botones (cambia por tema) */
+  --gap: 12px;                  /* Espaciado base (cambia por tema) */
+}
 
-    .app{display:flex;min-height:100vh;}
-    .sidebar{width:280px;background:var(--surface);border-right:1px solid var(--border);padding:16px;display:flex;flex-direction:column;gap:8px}
-    .sidebar h1{font-size:18px;margin:0 0 8px}
-    .nav-btn{display:block;width:100%;text-align:left;padding:10px 12px;border-radius:10px;border:1px solid transparent;background:transparent;color:var(--text-2);cursor:pointer}
-    .nav-btn:hover{background:var(--surface-2);color:var(--text)}
-    .nav-btn.active{background:var(--primary);color:#0b1220;border-color:transparent}
-    .content{flex:1;display:flex;flex-direction:column}
-    .topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--border)}
-    .view{display:none;padding:16px}
-    .view.active{display:block}
-    .btn{padding:8px 12px;border-radius:10px;border:1px solid var(--border);background:var(--surface-2);color:var(--text);cursor:pointer}
-    .btn.primary{background:var(--primary);color:#0b1220;border-color:transparent}
-    .panel{background:var(--card-bg);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow)}
+/* Claro/Oscuro */
+[data-color-scheme="light"]{
+  --bg: #f8fafc; --surface:#ffffff; --surface-2:#f1f5f9; --text:#0f172a; --text-2:#475569;
+  --primary:#0ea5e9; --primary-2:#0284c7; --border:#e5e7eb; --card:#ffffff; --bg-image:none;
+}
 
-    /* Biblioteca */
-    .filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
-    .filters select,.filters input{padding:10px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text)}
-    .grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(210px,1fr));gap:16px}
-    .card{position:relative;padding:12px;border-radius:12px;background:var(--surface);border:1px solid var(--border)}
-    .card:hover{border-color:var(--primary)}
-    .cover{width:100%;aspect-ratio:1;border-radius:10px;overflow:hidden;background:#0b1220;display:flex;align-items:center;justify-content:center}
-    .cover img{width:100%;height:100%;object-fit:cover}
-    .title{font-weight:700;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .subtitle{color:var(--text-2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+/* ================== TEMAS (estética + composición) ================== */
+/* NORMAL (por defecto): sin imagen, formas suaves cuadradas */
+[data-theme="normal"]{ --bg-image:none; --shape:10px; --gap:12px; }
 
-    /* Mini player */
-    .mini{position:fixed;bottom:0;left:280px;right:0;background:var(--surface);border-top:1px solid var(--border);padding:10px 12px;display:none;gap:10px;z-index:20}
-    .mini.active{display:flex;flex-direction:column}
-    .mini-top{display:flex;align-items:center;gap:10px}
-    .prog{height:6px;background:var(--surface-2);border-radius:99px;overflow:hidden}
-    .prog > div{height:6px;background:var(--primary);width:0}
+/* RETRO: colores cálidos, cards biseladas, fondo vinilos */
+[data-theme="retro"]{
+  --primary:#f59e0b; --primary-2:#d97706;
+  --bg-image:url('https://images.unsplash.com/photo-1519861531473-9200262188bf?q=80&w=1600&auto=format&fit=crop');
+  --shape:6px; --gap:10px;
+}
 
-    /* YouTube (minimizado por defecto) */
-    #yt{position:fixed;bottom:116px;right:16px;width:420px;height:236px;border-radius:12px;overflow:hidden;background:#000;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:scale(.95);transition:opacity .25s, transform .25s}
-    #yt.visible{opacity:1;pointer-events:auto;transform:scale(1)}
+/* NATURALEZA: verdes, esquinas orgánicas, fondo bosque */
+[data-theme="naturaleza"]{
+  --primary:#16a34a; --primary-2:#15803d;
+  --bg-image:url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?q=80&w=1600&auto=format&fit=crop');
+  --shape:18px; --gap:14px;
+}
 
-    /* Calendario */
-    .calendar-wrap{display:grid;grid-template-columns:1fr 340px;gap:16px}
-    .calendar{padding:12px}
-    .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
-    .cal-head{padding:8px;text-align:center;color:var(--text-2);font-weight:700}
-    .cal-day{background:var(--surface);border:1px solid var(--border);border-radius:10px;height:110px;padding:8px;position:relative;cursor:pointer}
-    .cal-day.today{outline: var(--focus)}
-    .dotwrap{position:absolute;left:8px;bottom:8px;display:flex;gap:6px}
-    .dot{width:8px;height:8px;border-radius:999px}
-    .dot.task{background:#22c55e}
-    .dot.note{background:#3b82f6}
-    .dot.birthday{background:#f97316}
-    .agenda{padding:12px}
-    .agenda h3{margin:6px 0 12px}
+/* INDUSTRIAL: grises, bordes rectos, rejilla marcada */
+[data-theme="industrial"]{
+  --primary:#9ca3af; --primary-2:#6b7280;
+  --bg-image:url('https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1600&auto=format&fit=crop');
+  --shape:2px; --gap:10px;
+}
 
-    /* Modales */
-    .modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:50}
-    .modal.active{display:flex}
-    .modal-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px;max-width:820px;width:92%;max-height:86vh;overflow:auto}
+/* CIBERPUNK: neones, tarjetas con glow, fondo ciudad neón */
+[data-theme="ciberpunk"]{
+  --primary:#a21caf; --primary-2:#7e22ce;
+  --bg-image:url('https://images.unsplash.com/photo-1535223289827-42f1e9919769?q=80&w=1600&auto=format&fit=crop');
+  --shape:16px; --gap:12px;
+}
 
-    /* Accesibilidad */
-    :focus-visible{outline: var(--focus); outline-offset:2px}
-    .sr-only{position:absolute;width:1px;height:1px;overflow:hidden;margin:-1px;padding:0;clip:rect(0 0 0 0);border:0}
+/* OCÉANO */
+[data-theme="oceano"]{
+  --primary:#0284c7; --primary-2:#0369a1;
+  --bg-image:url('https://images.unsplash.com/photo-1507525428034-b723cf961d3e?q=80&w=1600&auto=format&fit=crop');
+  --shape:14px; --gap:12px;
+}
 
-    /* Responsive */
-    @media (max-width: 900px){
-      .sidebar{position:fixed;left:0;right:0;bottom:0;height:64px;display:flex;flex-direction:row;align-items:center;justify-content:space-around;z-index:30}
-      .content{padding-bottom:76px}
-      .mini{left:0}
-      .calendar-wrap{grid-template-columns:1fr}
-      #yt{right:12px;width:360px;height:202px}
-    }
-  </style>
+/* BOSQUE */
+[data-theme="bosque"]{
+  --primary:#0f766e; --primary-2:#115e59;
+  --bg-image:url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1600&auto=format&fit=crop');
+  --shape:16px; --gap:14px;
+}
+
+/* VAPORWAVE */
+[data-theme="vaporwave"]{
+  --primary:#f472b6; --primary-2:#e879f9;
+  --bg-image:url('https://images.unsplash.com/photo-1520975922284-7b683d4b0f0d?q=80&w=1600&auto=format&fit=crop');
+  --shape:20px; --gap:16px;
+}
+
+/* AÑOS 20: dorados, tarjetas con borde doble */
+[data-theme="años20"]{
+  --primary:#b45309; --primary-2:#92400e;
+  --bg-image:url('https://images.unsplash.com/photo-1499363536502-87642509e31b?q=80&w=1600&auto=format&fit=crop');
+  --shape:0px; --gap:12px;
+}
+
+/* MINIMAL: sin imagen, pocas sombras, gran blanco/negro */
+[data-theme="minimal"]{
+  --primary:#111827; --primary-2:#0b1220;
+  --bg-image:none; --shape:12px; --gap:10px;
+}
+
+/* CIUDAD: rojos vivos, tarjetas apiladas */
+[data-theme="ciudad"]{
+  --primary:#ef4444; --primary-2:#b91c1c;
+  --bg-image:url('https://images.unsplash.com/photo-1439405326854-014607f694d7?q=80&w=1600&auto=format&fit=crop');
+  --shape:8px; --gap:12px;
+}
+
+/* ================== ACCESIBILIDAD ================== */
+[data-contrast="high"]{
+  --text: #ffffff; --text-2:#d1d5db; --border:#ffffff; --focus: 3px solid #ffd166;
+}
+[data-dyslexia="on"] body{ font-family: "OpenDyslexicAlta-Regular", system-ui, -apple-system, Segoe UI, Inter, Arial, sans-serif; }
+[data-colorblind="on"]{
+  /* Paleta segura para deuteranopía/protanopía */
+  --primary:#0072B2; --primary-2:#005A90;
+}
+
+/* ================== LAYOUT ================== */
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  background: var(--bg) no-repeat center/cover fixed;
+  background-image: var(--bg-image);
+  color: var(--text);
+}
+
+.app{display:flex;min-height:100vh;gap:var(--gap)}
+.sidebar{
+  width:280px; background:var(--surface); border-right:1px solid var(--border);
+  padding:12px; display:flex; flex-direction:column; gap:8px;
+}
+.sidebar h1{font-size:18px;margin:8px 8px 4px}
+.nav-btn{
+  display:block;width:100%;text-align:left;padding:10px 12px;border-radius:var(--shape);
+  border:1px solid transparent;background:transparent;color:var(--text-2);cursor:pointer
+}
+.nav-btn:hover{background:var(--surface-2);color:var(--text)}
+.nav-btn.active{background:var(--primary);color:#0b1220;border-color:transparent}
+.content{flex:1;display:flex;flex-direction:column;gap:var(--gap)}
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--surface);
+  border-bottom:1px solid var(--border)
+}
+.view{display:none;padding:var(--gap)}
+.view.active{display:block}
+.btn{
+  padding:8px 12px;border-radius:var(--shape);border:1px solid var(--border);
+  background:var(--surface-2);color:var(--text);cursor:pointer
+}
+.btn.primary{background:var(--primary);color:#0b1220;border-color:transparent}
+.panel{background:var(--card);border:1px solid var(--border);border-radius:var(--shape);box-shadow:var(--shadow)}
+
+/* Biblioteca */
+.filters{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+.filters select,.filters input{padding:10px;border-radius:var(--shape);border:1px solid var(--border);background:var(--surface);color:var(--text)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill, minmax(210px,1fr));gap:12px}
+.card{position:relative;padding:12px;border-radius:var(--shape);background:var(--surface);border:1px solid var(--border)}
+.card:hover{border-color:var(--primary)}
+.cover{width:100%;aspect-ratio:1;border-radius:var(--shape);overflow:hidden;background:#0b1220;display:flex;align-items:center;justify-content:center}
+.cover img{width:100%;height:100%;object-fit:cover}
+.title{font-weight:700;margin-top:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.subtitle{color:var(--text-2);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* Mini player */
+.mini{
+  position:fixed;bottom:0;left:280px;right:0;background:var(--surface);border-top:1px solid var(--border);
+  padding:10px 12px;display:none;gap:10px;z-index:20
+}
+.mini.active{display:flex;flex-direction:column}
+.mini-top{display:flex;align-items:center;gap:10px}
+.prog{height:8px;background:var(--surface-2);border-radius:99px;overflow:hidden;cursor:pointer}
+.prog > div{height:8px;background:var(--primary);width:0}
+
+/* YouTube (minimizado por defecto) */
+#yt{position:fixed;bottom:116px;right:16px;width:420px;height:236px;border-radius:var(--shape);overflow:hidden;background:#000;box-shadow:var(--shadow);opacity:0;pointer-events:none;transform:scale(.95);transition:opacity .25s, transform .25s}
+#yt.visible{opacity:1;pointer-events:auto;transform:scale(1)}
+
+/* Calendario */
+.calendar-wrap{display:grid;grid-template-columns:1fr 340px;gap:12px}
+.calendar{padding:12px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.cal-head{padding:8px;text-align:center;color:var(--text-2);font-weight:700}
+.cal-day{background:var(--surface);border:1px solid var(--border);border-radius:var(--shape);height:110px;padding:8px;position:relative;cursor:pointer}
+.cal-day.today{outline: var(--focus)}
+.dotwrap{position:absolute;left:8px;bottom:8px;display:flex;gap:6px}
+.dot{width:8px;height:8px;border-radius:999px}
+.dot.task{background:#22c55e}
+.dot.note{background:#3b82f6}
+.dot.birthday{background:#f97316}
+.agenda{padding:12px}
+.agenda h3{margin:6px 0 12px}
+
+/* Modales */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.5);display:none;align-items:center;justify-content:center;z-index:50}
+.modal.active{display:flex}
+.modal-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--shape);padding:16px;max-width:860px;width:92%;max-height:86vh;overflow:auto}
+
+/* Accesibilidad visual extra */
+:focus-visible{outline: var(--focus); outline-offset:2px}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;margin:-1px;padding:0;clip:rect(0 0 0 0);border:0}
+
+/* Responsive */
+@media (max-width: 900px){
+  .sidebar{position:fixed;left:0;right:0;bottom:0;height:64px;display:flex;flex-direction:row;align-items:center;justify-content:space-around;z-index:30}
+  .content{padding-bottom:76px}
+  .mini{left:0}
+  .calendar-wrap{grid-template-columns:1fr}
+  #yt{right:12px;width:360px;height:202px}
+}
+</style>
 </head>
 <body>
-  <div id="aria" aria-live="polite" class="sr-only"></div>
-  <div class="app">
-    <aside class="sidebar">
-      <h1>🎵 Mi Música</h1>
-      <button class="nav-btn active" data-view="cal">📅 Calendario</button>
-      <button class="nav-btn" data-view="lib">📚 Biblioteca</button>
-      <button class="nav-btn" data-view="pls">🎧 Playlists</button>
-      <button class="nav-btn" data-view="tsk">✅ Tareas</button>
-      <button class="nav-btn" id="btn-settings">⚙️ Ajustes</button>
-      <button class="nav-btn" id="btn-scheme">🌓 Claro / Oscuro</button>
-    </aside>
+<div id="aria" aria-live="polite" class="sr-only"></div>
 
-    <main class="content">
-      <div class="topbar panel" style="border-radius:0">
-        <div style="display:flex;align-items:center;gap:8px">
-          <button class="btn" id="prev-month">◀</button>
-          <h2 id="month-title" style="margin:0"></h2>
-          <button class="btn" id="next-month">▶</button>
-        </div>
-        <div style="display:flex;gap:8px;align-items:center">
-          <input id="event-search" class="btn" placeholder="Buscar eventos / tareas" style="min-width:240px"/>
-        </div>
+<div class="app">
+  <aside class="sidebar">
+    <h1>🎵 Mi Música</h1>
+    <button class="nav-btn active" data-view="cal">📅 Calendario</button>
+    <button class="nav-btn" data-view="lib">📚 Biblioteca</button>
+    <button class="nav-btn" data-view="pls">🎧 Playlists</button>
+    <button class="nav-btn" data-view="tsk">✅ Tareas</button>
+    <button class="nav-btn" id="btn-settings">⚙️ Ajustes</button>
+    <button class="nav-btn" id="btn-scheme">🌓 Claro / Oscuro</button>
+  </aside>
+
+  <main class="content">
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:8px">
+        <button class="btn" id="prev-month">◀</button>
+        <h2 id="month-title" style="margin:0"></h2>
+        <button class="btn" id="next-month">▶</button>
       </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <input id="event-search" class="btn" placeholder="Buscar eventos / tareas" style="min-width:240px"/>
+      </div>
+    </div>
 
-      <!-- CALENDARIO -->
-      <section class="view active" id="view-cal">
-        <div class="calendar-wrap">
-          <div class="calendar panel">
-            <div class="cal-grid" id="cal-grid"></div>
+    <!-- CALENDARIO -->
+    <section class="view active" id="view-cal">
+      <div class="calendar-wrap">
+        <div class="calendar panel">
+          <div class="cal-grid" id="cal-grid"></div>
+        </div>
+        <aside class="agenda panel">
+          <h3>📌 Agenda (30 días)</h3>
+          <div id="agenda"></div>
+          <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn" id="quick-add">➕ Añadir rápido</button>
+            <button class="btn" id="btn-export">⬇️ Exportar</button>
+            <input type="file" id="import-file" accept="application/json" hidden>
+            <button class="btn" id="btn-import">⬆️ Importar</button>
           </div>
-          <aside class="agenda panel">
-            <h3>📌 Agenda (30 días)</h3>
-            <div id="agenda"></div>
-            <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap">
-              <button class="btn" id="quick-add">➕ Añadir rápido</button>
-              <button class="btn" id="btn-export">⬇️ Exportar</button>
-              <input type="file" id="import-file" accept="application/json" hidden>
-              <button class="btn" id="btn-import">⬆️ Importar</button>
-            </div>
-          </aside>
-        </div>
-      </section>
-
-      <!-- BIBLIOTECA -->
-      <section class="view" id="view-lib">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <button class="btn primary" id="btn-upload">💿 Cargar canción</button>
-          <button class="btn" id="btn-folder">📁 Cargar carpeta</button>
-          <button class="btn" id="btn-yt">▶️ Añadir YouTube</button>
-          <input type="file" id="file-upload" accept="audio/*" multiple hidden>
-          <input type="file" id="folder-upload" webkitdirectory multiple accept="audio/*" hidden>
-        </div>
-        <div class="filters">
-          <select id="f-genre"><option value="">Todos los géneros</option></select>
-          <select id="f-mood"><option value="">Todos los estados</option></select>
-          <input id="f-search" placeholder="🔍 Buscar..."/>
-        </div>
-        <div class="grid" id="grid"></div>
-      </section>
-
-      <!-- PLAYLISTS -->
-      <section class="view" id="view-pls">
-        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
-          <input id="new-pls" class="btn" placeholder="Nueva playlist" style="min-width:240px"/>
-          <button class="btn primary" id="create-pls">Crear</button>
-          <button class="btn" id="smart-pls">⚡ Smart</button>
-          <input type="file" id="pls-cover-file" accept="image/*" hidden>
-        </div>
-        <div id="pls-list" class="grid"></div>
-      </section>
-
-      <!-- TAREAS -->
-      <section class="view" id="view-tsk">
-        <h3>✅ Vista de Tareas (urgencia)</h3>
-        <div id="tasks-list" class="panel" style="padding:10px"></div>
-      </section>
-    </main>
-  </div>
-
-  <!-- MINI PLAYER -->
-  <div class="mini" id="mini">
-    <div class="mini-top">
-      <div class="cover" style="width:56px;height:56px;border-radius:10px" id="p-cover">🎵</div>
-      <div style="flex:1;min-width:0">
-        <div id="p-title" class="title">Sin reproducción</div>
-        <div id="p-artist" class="subtitle"></div>
+        </aside>
       </div>
-      <div style="display:flex;gap:6px;align-items:center">
-        <button class="btn" id="prev">⏮️</button>
-        <button class="btn primary" id="play">▶️</button>
-        <button class="btn" id="next">⏭️</button>
-        <button class="btn" id="shuffle" title="Aleatorio">🔀</button>
-        <button class="btn" id="repeat" title="Repetir">🔁</button>
-        <button class="btn" id="stop">✕</button>
-        <button class="btn" id="yt-toggle" title="Mostrar/Ocultar vídeo">📺</button>
+    </section>
+
+    <!-- BIBLIOTECA -->
+    <section class="view" id="view-lib">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <button class="btn primary" id="btn-upload">💿 Cargar canción</button>
+        <button class="btn" id="btn-folder">📁 Cargar carpeta</button>
+        <button class="btn" id="btn-yt">▶️ Añadir YouTube</button>
+        <input type="file" id="file-upload" accept="audio/*" multiple hidden>
+        <input type="file" id="folder-upload" webkitdirectory multiple accept="audio/*" hidden>
       </div>
-      <div style="display:flex;gap:8px;align-items:center;margin-left:8px">
-        <span id="vol-ico">🔊</span>
-        <input type="range" id="vol" min="0" max="100" value="70">
+      <div class="filters">
+        <select id="f-genre"><option value="">Todos los géneros</option></select>
+        <select id="f-mood"><option value="">Todos los estados</option></select>
+        <input id="f-search" placeholder="🔍 Buscar..."/>
       </div>
+      <div class="grid" id="grid"></div>
+    </section>
+
+    <!-- PLAYLISTS -->
+    <section class="view" id="view-pls">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px">
+        <input id="new-pls" class="btn" placeholder="Nueva playlist" style="min-width:240px"/>
+        <button class="btn primary" id="create-pls">Crear</button>
+        <button class="btn" id="smart-pls">⚡ Smart</button>
+        <input type="file" id="pls-cover-file" accept="image/*" hidden>
+      </div>
+      <div id="pls-list" class="grid"></div>
+    </section>
+
+    <!-- TAREAS -->
+    <section class="view" id="view-tsk">
+      <h3>✅ Vista de Tareas (urgencia)</h3>
+      <div id="tasks-list" class="panel" style="padding:10px"></div>
+    </section>
+  </main>
+</div>
+
+<!-- MINI PLAYER -->
+<div class="mini" id="mini">
+  <div class="mini-top">
+    <div class="cover" style="width:56px;height:56px" id="p-cover">🎵</div>
+    <div style="flex:1;min-width:0">
+      <div id="p-title" class="title">Sin reproducción</div>
+      <div id="p-artist" class="subtitle"></div>
     </div>
-    <div class="prog"><div id="bar"></div></div>
-    <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-2)">
-      <span id="tcur">0:00</span>
-      <span id="ttot">0:00</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <button class="btn" id="prev">⏮️</button>
+      <button class="btn primary" id="play">▶️</button>
+      <button class="btn" id="next">⏭️</button>
+      <button class="btn" id="shuffle" title="Aleatorio">🔀</button>
+      <button class="btn" id="repeat" title="Repetir">🔁</button>
+      <button class="btn" id="stop">✕</button>
+      <button class="btn" id="yt-toggle" title="Mostrar/Ocultar vídeo">📺</button>
+    </div>
+    <div style="display:flex;gap:8px;align-items:center;margin-left:8px">
+      <span id="vol-ico">🔊</span>
+      <input type="range" id="vol" min="0" max="100" value="70">
     </div>
   </div>
+  <div class="prog" id="progress"><div id="bar"></div></div>
+  <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--text-2)">
+    <span id="tcur">0:00</span>
+    <span id="ttot">0:00</span>
+  </div>
+</div>
 
-  <audio id="audio"></audio>
-  <!-- YouTube minimizado por defecto -->
-  <div id="yt"></div>
+<audio id="audio"></audio>
+<div id="yt"></div>
 
-  <!-- MODALES -->
-  <div class="modal" id="modal-yt">
-    <div class="modal-card">
-      <h3 style="margin-top:0">Añadir desde YouTube</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
-        <label>Título<input id="m-yt-title" class="btn"/></label>
-        <label>Artista<input id="m-yt-artist" class="btn"/></label>
-        <label style="grid-column:1/-1">URL de YouTube<input id="m-yt-url" class="btn" placeholder="https://youtube.com/watch?v=..."/></label>
-      </div>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn" data-close>Cancelar</button>
-        <button class="btn primary" id="m-yt-save">Guardar</button>
-      </div>
+<!-- MODAL YouTube -->
+<div class="modal" id="modal-yt">
+  <div class="modal-card">
+    <h3 style="margin-top:0">Añadir desde YouTube</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <label>Título (opcional)<input id="m-yt-title" class="btn" placeholder="Si lo dejas vacío, se toma del vídeo"/></label>
+      <label>Artista (opcional)<input id="m-yt-artist" class="btn" placeholder="Si lo dejas vacío, se toma del canal"/></label>
+      <label style="grid-column:1/-1">URL de YouTube<input id="m-yt-url" class="btn" placeholder="https://youtube.com/watch?v=..."/></label>
+    </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn primary" id="m-yt-save">Guardar</button>
     </div>
   </div>
+</div>
 
-  <div class="modal" id="modal-settings">
-    <div class="modal-card">
-      <h3 style="margin-top:0">Ajustes</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
-        <div class="panel" style="padding:12px">
-          <h4>Accesibilidad</h4>
-          <label><input type="checkbox" id="opt-contrast"> Alto contraste</label><br>
-          <label><input type="checkbox" id="opt-reduce"> Reducir animaciones</label><br>
-          <label><input type="checkbox" id="opt-font"> Fuente grande</label><br>
-          <label><input type="checkbox" id="opt-aria" checked> Mensajes para lector</label>
-        </div>
-        <div class="panel" style="padding:12px">
-          <h4>Reproducción</h4>
-          <label><input type="checkbox" id="opt-next" checked> Auto-siguiente</label><br>
-          <label><input type="checkbox" id="opt-cross"> Crossfade 1s (visual)</label><br>
-          <label><input type="checkbox" id="opt-norm"> Normalizar volumen (beta)</label><br>
-          <label>Temporizador de sueño (min) <input id="opt-sleep" type="number" class="btn" value="0" style="width:90px"></label>
-        </div>
-        <div class="panel" style="padding:12px;grid-column:1/-1">
-          <h4>Temas</h4>
-          <div style="display:flex;flex-wrap:wrap;gap:8px">
-            <button class="btn" data-theme="retro">Retro</button>
-            <button class="btn" data-theme="naturaleza">Naturaleza</button>
-            <button class="btn" data-theme="industrial">Industrial</button>
-            <button class="btn" data-theme="ciberpunk">Ciberpunk</button>
-            <button class="btn" data-theme="oceano">Océano</button>
-            <button class="btn" data-theme="bosque">Bosque</button>
-            <button class="btn" data-theme="vaporwave">Vaporwave</button>
-            <button class="btn" data-theme="años20">Años 20</button>
-            <button class="btn" data-theme="minimal">Minimal</button>
-            <button class="btn" data-theme="ciudad">Ciudad</button>
-          </div>
-        </div>
+<!-- MODAL Ajustes -->
+<div class="modal" id="modal-settings">
+  <div class="modal-card">
+    <h3 style="margin-top:0">Ajustes</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+      <div class="panel" style="padding:12px">
+        <h4>Accesibilidad</h4>
+        <label><input type="checkbox" id="opt-contrast"> Alto contraste</label><br>
+        <label><input type="checkbox" id="opt-reduce"> Reducir animaciones</label><br>
+        <label><input type="checkbox" id="opt-font"> Fuente grande</label><br>
+        <label><input type="checkbox" id="opt-aria" checked> Mensajes para lector</label><br>
+        <label><input type="checkbox" id="opt-dys"> Modo dislexia</label><br>
+        <label><input type="checkbox" id="opt-cb"> Modo daltonismo</label>
       </div>
-      <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn" data-close>Cerrar</button>
+      <div class="panel" style="padding:12px">
+        <h4>Reproducción</h4>
+        <label><input type="checkbox" id="opt-next" checked> Auto-siguiente</label><br>
+        <label>Temporizador de sueño (min)
+          <input id="opt-sleep" type="number" class="btn" value="0" style="width:90px">
+        </label>
+      </div>
+      <div class="panel" style="padding:12px;grid-column:1/-1">
+        <h4>Temas</h4>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <button class="btn" data-theme="normal">Normal</button>
+          <button class="btn" data-theme="retro">Retro</button>
+          <button class="btn" data-theme="naturaleza">Naturaleza</button>
+          <button class="btn" data-theme="industrial">Industrial</button>
+          <button class="btn" data-theme="ciberpunk">Ciberpunk</button>
+          <button class="btn" data-theme="oceano">Océano</button>
+          <button class="btn" data-theme="bosque">Bosque</button>
+          <button class="btn" data-theme="vaporwave">Vaporwave</button>
+          <button class="btn" data-theme="años20">Años 20</button>
+          <button class="btn" data-theme="minimal">Minimal</button>
+          <button class="btn" data-theme="ciudad">Ciudad</button>
+        </div>
       </div>
     </div>
-  </div>
-
-  <!-- POPUP Día -->
-  <div class="modal" id="modal-day">
-    <div class="modal-card" style="max-width:740px">
-      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
-        <h3 id="day-title" style="margin:0"></h3>
-        <button class="btn" data-close>✕</button>
-      </div>
-      <div id="day-list" style="margin-top:8px"></div>
-      <hr style="border-color:var(--border);margin:12px 0">
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
-        <input id="ev-title" class="btn" placeholder="Título">
-        <select id="ev-type" class="btn"><option value="task">Tarea</option><option value="note">Nota</option><option value="birthday">Cumpleaños</option></select>
-        <input id="ev-time" class="btn" placeholder="HH:MM">
-        <select id="ev-priority" class="btn"><option value="3">Alta</option><option value="2">Media</option><option value="1">Baja</option></select>
-      </div>
-      <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
-        <button class="btn" data-close>Cancelar</button>
-        <button class="btn primary" id="ev-save">Guardar</button>
-      </div>
+    <div style="margin-top:12px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" data-close>Cerrar</button>
     </div>
   </div>
+</div>
 
-  <script>
-  /* ===================== UTILIDADES BÁSICAS ===================== */
-  const U = {
-    q: s => document.querySelector(s),
-    qa: s => document.querySelectorAll(s),
-    el: (tag, attrs={}) => { const e=document.createElement(tag); for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v); return e; },
-    fmt: s => { s = Math.max(0, s||0); const m=Math.floor(s/60), sec=Math.floor(s%60); return `${m}:${String(sec).padStart(2,'0')}`; },
-    announce: txt => { if(state.a11y.aria){ const live = document.getElementById('aria'); if(live) live.textContent = txt; } }
-  };
+<!-- MODAL Día -->
+<div class="modal" id="modal-day">
+  <div class="modal-card" style="max-width:740px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:10px">
+      <h3 id="day-title" style="margin:0"></h3>
+      <button class="btn" data-close>✕</button>
+    </div>
+    <div id="day-list" style="margin-top:8px"></div>
+    <hr style="border-color:var(--border);margin:12px 0">
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:8px">
+      <input id="ev-title" class="btn" placeholder="Título">
+      <select id="ev-type" class="btn"><option value="task">Tarea</option><option value="note">Nota</option><option value="birthday">Cumpleaños</option></select>
+      <input id="ev-time" class="btn" placeholder="HH:MM">
+      <select id="ev-priority" class="btn"><option value="3">Alta</option><option value="2">Media</option><option value="1">Baja</option></select>
+    </div>
+    <div style="margin-top:10px;display:flex;gap:8px;justify-content:flex-end">
+      <button class="btn" data-close>Cancelar</button>
+      <button class="btn primary" id="ev-save">Guardar</button>
+    </div>
+  </div>
+</div>
 
-  /* ===================== ESTADO ===================== */
-  const state = {
-    view: 'cal',
-    colorScheme: localStorage.getItem('scheme') || 'dark',
-    theme: localStorage.getItem('theme') || 'bosque',
-    songs: JSON.parse(localStorage.getItem('songs')||'[]'), // blobs no se persist.
-    idx: -1,
-    playing: false,
-    shuffle: false,
-    repeat: 'none',
-    volume: 0.7,
-    yt: { player:null, visible:false },
-    a11y: { contrast:false, reduce:false, font:false, aria:true },
-    events: JSON.parse(localStorage.getItem('events')||'[]'),
-    playlists: JSON.parse(localStorage.getItem('playlists')||'[]'),
-    sleepMin: 0,
-    autoplayNext: true
-  };
+<script>
+/* ===================== UTILIDADES ===================== */
+const U = {
+  q: s => document.querySelector(s),
+  qa: s => document.querySelectorAll(s),
+  el: (tag, attrs={}) => { const e=document.createElement(tag); for (const [k,v] of Object.entries(attrs)) e.setAttribute(k,v); return e; },
+  fmt: s => { s=Math.max(0,s||0); const m=Math.floor(s/60), sec=Math.floor(s%60); return m+':'+String(sec).padStart(2,'0'); },
+  announce: txt => { if(state.a11y.aria){ const live = document.getElementById('aria'); if(live) live.textContent = txt; } }
+};
 
-  /* ===================== TEMA Y ESQUEMA ===================== */
-  function applyScheme(){ document.documentElement.setAttribute('data-color-scheme', state.colorScheme); localStorage.setItem('scheme', state.colorScheme); }
-  function applyTheme(){ document.documentElement.setAttribute('data-theme', state.theme); localStorage.setItem('theme', state.theme); }
-  applyScheme(); applyTheme();
+/* ===================== ESTADO ===================== */
+const state = {
+  view: 'cal',
+  colorScheme: localStorage.getItem('scheme') || 'dark',      // oscuro por defecto
+  theme: localStorage.getItem('theme') || 'normal',           // normal por defecto (sin imagen)
+  songs: JSON.parse(localStorage.getItem('songs')||'[]'),
+  idx: -1,
+  shuffle: false,
+  repeat: 'none',
+  volume: 0.7,
+  yt: { player:null, visible:false, timer:null },
+  a11y: { contrast:false, reduce:false, font:false, aria:true, dys:false, cb:false },
+  events: JSON.parse(localStorage.getItem('events')||'[]'),
+  playlists: JSON.parse(localStorage.getItem('playlists')||'[]'),
+  sleepMin: 0,
+  autoplayNext: true
+};
 
-  /* ===================== NAVEGACIÓN ===================== */
-  U.qa('.nav-btn').forEach(b => b.addEventListener('click', () => {
-    U.qa('.nav-btn').forEach(x => x.classList.remove('active')); b.classList.add('active');
-    state.view = b.dataset.view;
-    U.qa('.view').forEach(v => v.classList.remove('active')); U.q('#view-'+state.view).classList.add('active');
-    if(state.view==='cal') renderCalendar();
-    if(state.view==='lib') renderSongs();
-    if(state.view==='pls') renderPlaylists();
-    if(state.view==='tsk') renderTasks();
-  }));
-  U.q('#btn-scheme').addEventListener('click', () => { state.colorScheme = (state.colorScheme==='dark'?'light':'dark'); applyScheme(); });
+/* ===================== ESQUEMA / TEMA ===================== */
+function applyScheme(){ document.documentElement.setAttribute('data-color-scheme', state.colorScheme); localStorage.setItem('scheme', state.colorScheme); }
+function applyTheme(){ document.documentElement.setAttribute('data-theme', state.theme); localStorage.setItem('theme', state.theme); }
+applyScheme(); applyTheme();
 
-  /* ===================== AJUSTES ===================== */
-  U.q('#btn-settings').addEventListener('click', () => U.q('#modal-settings').classList.add('active'));
-  U.qa('[data-close]').forEach(x => x.addEventListener('click', e => e.currentTarget.closest('.modal').classList.remove('active')));
-  U.qa('#modal-settings [data-theme]').forEach(btn => btn.addEventListener('click', () => { state.theme = btn.dataset.theme; applyTheme(); }));
+/* ===================== GITHUB: CARGA AUTOMÁTICA ===================== */
+const GITHUB = { owner:'mrdaniel7', repo:'CalendarioMultimedia', branch:'main', folder:'musica' };
 
-  U.q('#opt-contrast').addEventListener('change', e => document.documentElement.style.setProperty('--focus', e.target.checked ? '3px solid #fbbf24' : '3px solid rgba(34,211,238,.6)'));
-  U.q('#opt-reduce').addEventListener('change', e => document.documentElement.style.setProperty('scroll-behavior', e.target.checked ? 'auto' : 'smooth'));
-  U.q('#opt-font').addEventListener('change', e => document.body.style.fontSize = e.target.checked ? '18px' : '');
-  U.q('#opt-aria').addEventListener('change', e => state.a11y.aria = e.target.checked);
-  U.q('#opt-next').addEventListener('change', e => state.autoplayNext = e.target.checked);
-  U.q('#opt-sleep').addEventListener('change', e => state.sleepMin = Number(e.target.value)||0);
-
-  /* ===================== AUDIO ===================== */
-  const audio = U.q('#audio'); audio.volume = state.volume; U.q('#vol').value = Math.round(state.volume*100);
-  U.q('#vol').addEventListener('input', e => { state.volume = e.target.value/100; audio.volume = state.volume; U.q('#vol-ico').textContent = state.volume===0 ? '🔇' : state.volume<.5 ? '🔉' : '🔊'; });
-
-  function setMiniActive(on){ U.q('#mini').classList.toggle('active', !!on); }
-  function updateMini(song){
-    U.q('#p-title').textContent = song?.title || 'Sin reproducción';
-    U.q('#p-artist').textContent = song?.artist || '';
-    const c = U.q('#p-cover'); c.innerHTML='';
-    if(song?.cover){ const img = new Image(); img.src = song.cover; img.alt = song.title; c.appendChild(img); }
-    else { c.textContent='🎵'; }
-  }
-
-  function playSongByIndex(i){
-    if(i<0 || i>=state.songs.length) return;
-    state.idx = i;
-    const s = state.songs[i];
-    updateMini(s); setMiniActive(true);
-    if(s.type === 'youtube'){
-      ensureYouTube(s); audio.pause(); audio.src=''; U.q('#play').textContent='⏸️';
-    } else {
-      // local/github
-      U.q('#yt').classList.remove('visible'); state.yt.visible=false; U.q('#yt-toggle').textContent='📺';
-      audio.src = s.blob ? URL.createObjectURL(s.blob) : (s.fileUrl || '');
-      audio.play().catch(e=>console.warn(e));
-      U.q('#play').textContent='⏸️';
-    }
-    renderSongs();
-  }
-
-  U.q('#play').addEventListener('click', () => {
-    const s = state.songs[state.idx]; if(!s) return;
-    if(s.type==='youtube'){
-      if(state.yt.player){
-        const st = state.yt.player.getPlayerState();
-        if(st===1){ state.yt.player.pauseVideo(); U.q('#play').textContent='▶️'; }
-        else { state.yt.player.playVideo(); U.q('#play').textContent='⏸️'; }
+async function fetchGitHubSongs(){
+  try{
+    const api = `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.folder}?ref=${GITHUB.branch}`;
+    const r = await fetch(api);
+    if(!r.ok) return [];
+    const files = await r.json();
+    const audioExt = ['.mp3','.wav','.flac','.ogg','.m4a'];
+    const out = [];
+    for(const f of files){
+      if(f.type==='file' && audioExt.some(ext => f.name.toLowerCase().endsWith(ext))){
+        out.push({
+          id: Date.now()+Math.random(),
+          title: f.name.replace(/\.[^/.]+$/, ''),
+          artist: GITHUB.owner,
+          album: 'GitHub Repository',
+          type: 'github',
+          fileUrl: `https://raw.githubusercontent.com/${GITHUB.owner}/${GITHUB.repo}/${GITHUB.branch}/${GITHUB.folder}/${f.name}`,
+          cover: null, genres:[], moods:[], date: new Date().toISOString()
+        });
       }
-    } else {
-      if(audio.paused){ audio.play(); U.q('#play').textContent='⏸️'; }
-      else { audio.pause(); U.q('#play').textContent='▶️'; }
     }
-  });
-  U.q('#prev').addEventListener('click', () => { if(state.idx>0) playSongByIndex(state.idx-1); });
-  U.q('#next').addEventListener('click', () => { if(state.idx<state.songs.length-1) playSongByIndex(state.idx+1); });
-  U.q('#stop').addEventListener('click', () => {
+    return out;
+  }catch(e){ console.warn('GitHub error', e); return []; }
+}
+
+/* ===================== NAVEGACIÓN ===================== */
+U.qa('.nav-btn').forEach(b => b.addEventListener('click', () => {
+  U.qa('.nav-btn').forEach(x => x.classList.remove('active')); b.classList.add('active');
+  state.view = b.dataset.view;
+  U.qa('.view').forEach(v => v.classList.remove('active')); U.q('#view-'+state.view).classList.add('active');
+  if(state.view==='cal') renderCalendar();
+  if(state.view==='lib') renderSongs();
+  if(state.view==='pls') renderPlaylists();
+  if(state.view==='tsk') renderTasks();
+}));
+U.q('#btn-scheme').addEventListener('click', () => { state.colorScheme = (state.colorScheme==='dark'?'light':'dark'); applyScheme(); });
+
+/* ===================== AJUSTES ===================== */
+U.q('#btn-settings').addEventListener('click', () => U.q('#modal-settings').classList.add('active'));
+U.qa('[data-close]').forEach(x => x.addEventListener('click', e => e.currentTarget.closest('.modal').classList.remove('active')));
+U.qa('#modal-settings [data-theme]').forEach(btn => btn.addEventListener('click', () => { state.theme = btn.dataset.theme; applyTheme(); }));
+
+/* Accesibilidad */
+U.q('#opt-contrast').addEventListener('change', e => document.documentElement.setAttribute('data-contrast', e.target.checked ? 'high' : ''));
+U.q('#opt-reduce').addEventListener('change', e => document.documentElement.style.setProperty('scroll-behavior', e.target.checked ? 'auto' : 'smooth'));
+U.q('#opt-font').addEventListener('change', e => document.body.style.fontSize = e.target.checked ? '18px' : '');
+U.q('#opt-aria').addEventListener('change', e => state.a11y.aria = e.target.checked);
+U.q('#opt-dys').addEventListener('change', e => document.documentElement.setAttribute('data-dyslexia', e.target.checked ? 'on' : ''));
+U.q('#opt-cb').addEventListener('change', e => document.documentElement.setAttribute('data-colorblind', e.target.checked ? 'on' : ''));
+
+/* Reproducción */
+U.q('#opt-next').addEventListener('change', e => state.autoplayNext = e.target.checked);
+U.q('#opt-sleep').addEventListener('change', e => state.sleepMin = Number(e.target.value)||0);
+
+/* ===================== AUDIO ===================== */
+const audio = U.q('#audio'); audio.volume = state.volume; U.q('#vol').value = Math.round(state.volume*100);
+U.q('#vol').addEventListener('input', e => {
+  state.volume = e.target.value/100;
+  audio.volume = state.volume;
+  if(state.yt.player) state.yt.player.setVolume(Math.round(state.volume*100));
+  U.q('#vol-ico').textContent = state.volume===0 ? '🔇' : state.volume<.5 ? '🔉' : '🔊';
+});
+
+function setMiniActive(on){ U.q('#mini').classList.toggle('active', !!on); }
+function updateMini(song){
+  U.q('#p-title').textContent = song?.title || 'Sin reproducción';
+  U.q('#p-artist').textContent = song?.artist || '';
+  const c = U.q('#p-cover'); c.innerHTML='';
+  if(song?.cover){ const img = new Image(); img.src = song.cover; img.alt = song.title; c.appendChild(img); }
+  else { c.textContent='🎵'; }
+}
+
+function playSongByIndex(i){
+  if(i<0 || i>=state.songs.length) return;
+  state.idx = i; const s = state.songs[i]; updateMini(s); setMiniActive(true);
+  clearInterval(state.yt.timer);
+  if(s.type === 'youtube'){
+    ensureYouTube(s);
     audio.pause(); audio.src='';
-    if(state.yt.player){ state.yt.player.stopVideo(); }
-    state.playing=false; state.idx=-1; setMiniActive(false);
-    U.q('#bar').style.width='0%'; U.q('#tcur').textContent='0:00'; U.q('#ttot').textContent='0:00';
-  });
-
-  U.q('#shuffle').addEventListener('click', () => {
-    state.shuffle = !state.shuffle;
-    U.q('#shuffle').style.borderColor = state.shuffle ? 'var(--primary)' : 'var(--border)';
-  });
-  U.q('#repeat').addEventListener('click', () => {
-    state.repeat = state.repeat==='none' ? 'all' : state.repeat==='all' ? 'one' : 'none';
-    U.q('#repeat').textContent = state.repeat==='one' ? '🔂' : '🔁';
-  });
-
-  audio.addEventListener('timeupdate', () => {
-    if(audio.duration){
-      U.q('#bar').style.width = (audio.currentTime/audio.duration*100)+'%';
-      U.q('#tcur').textContent = U.fmt(audio.currentTime);
-      U.q('#ttot').textContent = U.fmt(audio.duration);
-    }
-  });
-  audio.addEventListener('ended', onEnded);
-
-  function onEnded(){
-    if(state.repeat==='one'){ playSongByIndex(state.idx); return; }
-    if(state.idx<state.songs.length-1) playSongByIndex(state.idx+1);
-    else if(state.repeat==='all') playSongByIndex(0);
+    U.q('#play').textContent='⏸️';
+  } else {
+    U.q('#yt').classList.remove('visible'); state.yt.visible=false; U.q('#yt-toggle').textContent='📺';
+    audio.src = s.blob ? URL.createObjectURL(s.blob) : (s.fileUrl || '');
+    audio.play().catch(e=>console.warn(e));
+    U.q('#play').textContent='⏸️';
+    // Duración se mostrará tras loadedmetadata
   }
+  renderSongs();
+}
 
-  /* ===================== YOUTUBE (minimizado) ===================== */
-  let ytReady = false;
-  window.onYouTubeIframeAPIReady = function(){ ytReady = true; };
-
-  function ensureYouTube(song){
-    const box = U.q('#yt'); box.classList.remove('visible'); state.yt.visible=false; U.q('#yt-toggle').textContent='📺';
-    const id = song.youtubeId;
-    if(!ytReady){ setTimeout(()=>ensureYouTube(song), 200); return; }
-    if(state.yt.player){ state.yt.player.loadVideoById(id); }
-    else {
-      state.yt.player = new YT.Player('yt', { videoId:id, playerVars:{ rel:0, modestbranding:1, playsinline:1 }, events:{
-        onReady: ev => { ev.target.playVideo(); U.q('#play').textContent='⏸️'; },
-        onStateChange: st => {
-          const s = st.data;
-          if(s===1) U.q('#play').textContent='⏸️';
-          if(s===2) U.q('#play').textContent='▶️';
-          if(s===0) onEnded();
-        }
-      }});
+U.q('#play').addEventListener('click', () => {
+  const s = state.songs[state.idx]; if(!s) return;
+  if(s.type==='youtube'){
+    if(state.yt.player){
+      const st = state.yt.player.getPlayerState();
+      if(st===1){ state.yt.player.pauseVideo(); U.q('#play').textContent='▶️'; }
+      else { state.yt.player.playVideo(); U.q('#play').textContent='⏸️'; }
     }
+  } else {
+    if(audio.paused){ audio.play(); U.q('#play').textContent='⏸️'; }
+    else { audio.pause(); U.q('#play').textContent='▶️'; }
   }
-  U.q('#yt-toggle').addEventListener('click', () => {
-    state.yt.visible = !state.yt.visible;
-    U.q('#yt').classList.toggle('visible', state.yt.visible);
-    U.q('#yt-toggle').textContent = state.yt.visible ? '🙈' : '📺';
-  });
+});
+U.q('#prev').addEventListener('click', () => { if(state.idx>0) playSongByIndex(state.idx-1); });
+U.q('#next').addEventListener('click', () => { if(state.idx<state.songs.length-1) playSongByIndex(state.idx+1); });
+U.q('#stop').addEventListener('click', () => {
+  audio.pause(); audio.src='';
+  if(state.yt.player){ state.yt.player.stopVideo(); }
+  clearInterval(state.yt.timer);
+  state.idx=-1; setMiniActive(false);
+  U.q('#bar').style.width='0%'; U.q('#tcur').textContent='0:00'; U.q('#ttot').textContent='0:00';
+});
 
-  /* ===================== BIBLIOTECA ===================== */
-  const exts = ['.mp3','.wav','.ogg','.m4a','.flac'];
-  U.q('#btn-upload').addEventListener('click', () => U.q('#file-upload').click());
-  U.q('#btn-folder').addEventListener('click', () => U.q('#folder-upload').click());
-  U.q('#file-upload').addEventListener('change', e => handleFiles(e.target.files));
-  U.q('#folder-upload').addEventListener('change', e => handleFiles(e.target.files));
-  U.q('#btn-yt').addEventListener('click', () => U.q('#modal-yt').classList.add('active'));
-  U.q('#m-yt-save').addEventListener('click', () => {
-    const url = U.q('#m-yt-url').value.trim();
-    const id  = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([^&\n?#]+)/)?.[1];
-    if(!id) return alert('URL inválida');
-    const s = {
-      id: Date.now(),
-      title: U.q('#m-yt-title').value || 'YouTube',
-      artist: U.q('#m-yt-artist').value || 'YouTube',
-      type: 'youtube',
-      youtubeId: id,
-      cover: `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
-      genres: [], moods: [], album: 'YouTube'
-    };
-    autoTagSong(s); ensureCover(s);
-    state.songs.push(s); persistSongs(); renderSongs();
-    U.q('#modal-yt').classList.remove('active');
-    U.q('#m-yt-url').value = ''; U.q('#m-yt-title').value=''; U.q('#m-yt-artist').value='';
-  });
+U.q('#shuffle').addEventListener('click', () => {
+  state.shuffle = !state.shuffle;
+  U.q('#shuffle').style.borderColor = state.shuffle ? 'var(--primary)' : 'var(--border)';
+});
+U.q('#repeat').addEventListener('click', () => {
+  state.repeat = state.repeat==='none' ? 'all' : state.repeat==='all' ? 'one' : 'none';
+  U.q('#repeat').textContent = state.repeat==='one' ? '🔂' : '🔁';
+});
 
-  async function handleFiles(files){
-    const arr = [...files].filter(f => exts.some(x => f.name.toLowerCase().endsWith(x)));
-    for(const file of arr){
-      const base = file.name.replace(/\.[^/.]+$/, '');
-      const s = { id: Date.now()+Math.random(), title: base, artist:'Desconocido', album:'Archivo Local', type:'local', blob:file, cover:null, genres:[], moods:[], fileName:file.name, date:new Date().toISOString() };
-      state.songs.push(s);
-      try{ await extractMetadata(s); }catch{}
-      try{ await ensureCoverViaYouTube(s); }catch{}
-      try{ autoTagSong(s); }catch{}
-    }
-    persistSongs(); renderSongs(); U.announce(`${arr.length} canciones añadidas`);
+audio.addEventListener('timeupdate', () => {
+  if(audio.duration){
+    U.q('#bar').style.width = (audio.currentTime/audio.duration*100)+'%';
+    U.q('#tcur').textContent = U.fmt(audio.currentTime);
+    U.q('#ttot').textContent = U.fmt(audio.duration);
   }
+});
+audio.addEventListener('loadedmetadata', () => { if(audio.duration) U.q('#ttot').textContent = U.fmt(audio.duration); });
+audio.addEventListener('ended', onEnded);
 
-  function persistSongs(){ localStorage.setItem('songs', JSON.stringify(state.songs.map(({blob, ...rest}) => rest))); }
+/* Línea de tiempo interactiva (audio + YouTube) */
+U.q('#progress').addEventListener('click', (e) => {
+  const rect=e.currentTarget.getBoundingClientRect();
+  const pct = Math.min(1, Math.max(0, (e.clientX-rect.left)/rect.width));
+  const s = state.songs[state.idx]; if(!s) return;
+  if(s.type==='youtube' && state.yt.player){
+    const dur = state.yt.player.getDuration() || 0;
+    state.yt.player.seekTo(dur*pct, true);
+  } else {
+    if(audio.duration) audio.currentTime = audio.duration*pct;
+  }
+});
 
-  // Metadatos -> portada embebida si existe
-  async function extractMetadata(song){
-    if(!song.blob) return;
-    return new Promise(res => {
-      jsmediatags.read(song.blob, {
-        onSuccess: tag => {
-          const t=tag.tags||{};
-          if(t.title)  song.title  = t.title;
-          if(t.artist) song.artist = t.artist;
-          if(t.album)  song.album  = t.album;
-          if(t.picture && t.picture.data && t.picture.format){
-            try{
-              const bytes = new Uint8Array(t.picture.data);
-              const blob  = new Blob([bytes], {type:t.picture.format});
-              song.cover  = URL.createObjectURL(blob);
-            }catch{}
-          }
-          res();
+/* ===================== YOUTUBE ===================== */
+let ytReady=false; window.onYouTubeIframeAPIReady = () => ytReady=true;
+
+function ensureYouTube(song){
+  const box = U.q('#yt'); box.classList.remove('visible'); state.yt.visible=false; U.q('#yt-toggle').textContent='📺';
+  const id = song.youtubeId;
+  if(!ytReady){ setTimeout(()=>ensureYouTube(song), 200); return; }
+  if(state.yt.player){ state.yt.player.loadVideoById(id); }
+  else {
+    state.yt.player = new YT.Player('yt', {
+      videoId:id, playerVars:{ rel:0, modestbranding:1, playsinline:1, controls:1 },
+      events:{
+        onReady: ev => {
+          ev.target.setVolume(Math.round(state.volume*100));
+          ev.target.playVideo(); U.q('#play').textContent='⏸️';
+          startYTProgressTimer();
         },
-        onError: () => res()
-      });
+        onStateChange: st => {
+          const S = st.data;
+          if(S===1){ U.q('#play').textContent='⏸️'; startYTProgressTimer(); }
+          if(S===2){ U.q('#play').textContent='▶️'; stopYTProgressTimer(); }
+          if(S===0) onEnded();
+        }
+      }
     });
   }
+  // Mantener minimizado por defecto
+  // (se muestra sólo al pulsar 📺)
+}
 
-  // Portadas: 1) YouTube/Google (vía Piped/Invidious), 2) fallback Unsplash
-  async function ensureCoverViaYouTube(song){ if(song.cover) return; const url = await fetchYouTubeThumb(`${song.artist||''} ${song.title||''}`.trim() || song.title || song.artist); if(url){ song.cover=url; return; } await ensureCoverFallback(song); }
-  async function ensureCoverFallback(song){ if(song.cover) return; song.cover = `https://source.unsplash.com/featured/400x400?${encodeURIComponent(song.artist||song.title||'music')}`; }
-  async function ensureCover(song){ if(!song.cover) await ensureCoverViaYouTube(song); }
-
-  async function fetchYouTubeThumb(query){
-    if(!query) return null;
-    // Intento 1: Piped
-    try{
-      const r = await fetch(`https://piped.video/api/v1/search?q=${encodeURIComponent(query)}&region=ES&type=video`);
-      if(r.ok){ const j=await r.json(); const v=j?.[0]; if(v?.url){ const id=(v.url.split('/watch?v=')[1]||'').split('&')[0]; if(id) return `https://img.youtube.com/vi/${id}/mqdefault.jpg`; } }
-    }catch{}
-    // Intento 2: Invidious
-    try{
-      const r = await fetch(`https://yt.artemislena.eu/api/v1/search?q=${encodeURIComponent(query)}`);
-      if(r.ok){ const j=await r.json(); const v=j?.[0]; if(v?.videoId) return `https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`; }
-    }catch{}
-    return null;
-  }
-
-  function renderSongs(){
-    const g = U.q('#grid'); if(!g) return;
-    const gf = U.q('#f-genre').value; const mf = U.q('#f-mood').value; const q=(U.q('#f-search').value||'').toLowerCase();
-    const list = state.songs.filter(s =>
-      (!gf || s.genres?.includes(gf)) &&
-      (!mf || s.moods?.includes(mf)) &&
-      (!q || (s.title||'').toLowerCase().includes(q) || (s.artist||'').toLowerCase().includes(q))
-    );
-    if(list.length===0){ g.innerHTML='<div class="panel" style="padding:16px">No hay canciones</div>'; return; }
-
-    g.innerHTML = list.map(s => {
-      const playing = state.idx>=0 && state.songs[state.idx]?.id===s.id ? 'outline: var(--focus);' : '';
-      return `<div class="card" style="${playing}" data-id="${s.id}">
-        <div class="cover">${ s.cover? `<img src="${s.cover}" alt="${s.title}">`: '🎵'}</div>
-        <div class="title">${s.title||''}</div>
-        <div class="subtitle">${s.artist||''}</div>
-        <div class="subtitle">${(s.genres||[]).join(', ')} · ${(s.moods||[]).join(', ')}</div>
-        <div style="display:flex;gap:6px;margin-top:8px">
-          <button class="btn primary" data-play>▶️</button>
-          <button class="btn" data-add>➕ Playlist</button>
-          <button class="btn" data-del>🗑️</button>
-        </div>
-      </div>`;
-    }).join('');
-
-    g.querySelectorAll('[data-play]').forEach(b => b.addEventListener('click', e => { const id=Number(e.currentTarget.closest('.card').dataset.id); const i=state.songs.findIndex(x=>x.id===id); playSongByIndex(i); }));
-    g.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { const id=Number(e.currentTarget.closest('.card').dataset.id); const i=state.songs.findIndex(x=>x.id===id); if(i>=0){ if(state.idx===i) U.q('#stop').click(); state.songs.splice(i,1); persistSongs(); renderSongs(); } }));
-    g.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', e => openAddToPlaylist(Number(e.currentTarget.closest('.card').dataset.id))));
-    populateFilters();
-  }
-
-  function populateFilters(){
-    const genres=new Set(), moods=new Set(); state.songs.forEach(s => { (s.genres||[]).forEach(x=>genres.add(x)); (s.moods||[]).forEach(x=>moods.add(x)); });
-    U.q('#f-genre').innerHTML = '<option value="">Todos los géneros</option>' + [...genres].sort().map(x=>`<option>${x}</option>`).join('');
-    U.q('#f-mood').innerHTML  = '<option value="">Todos los estados</option>' + [...moods].sort().map(x=>`<option>${x}</option>`).join('');
-  }
-  U.q('#f-genre').addEventListener('change', renderSongs);
-  U.q('#f-mood').addEventListener('change', renderSongs);
-  U.q('#f-search').addEventListener('input', renderSongs);
-
-  /* ===================== PLAYLISTS ===================== */
-  function openAddToPlaylist(songId){
-    const name = prompt('Añadir a playlist: escribe el nombre (o deja vacío para elegir existente)');
-    if(name){ ensurePlaylist(name); addSongToPlaylist(name, songId); renderPlaylists(); return; }
-    const list = state.playlists.map(p=>p.name).join('\n');
-    const pick = prompt('Elige una playlist existente:\n'+list);
-    if(pick){ ensurePlaylist(pick); addSongToPlaylist(pick, songId); renderPlaylists(); }
-  }
-
-  function ensurePlaylist(name){ if(!state.playlists.find(p=>p.name===name)) state.playlists.push({ name, cover:null, ids:[] }); savePlaylists(); }
-  function addSongToPlaylist(name, id){
-    const pl = state.playlists.find(p=>p.name===name);
-    if(!pl.ids.includes(id)) pl.ids.push(id);
-    if(!pl.cover){ const s=state.songs.find(x=>x.id===id); if(s?.cover) pl.cover=s.cover; }
-    savePlaylists();
-  }
-  function savePlaylists(){ localStorage.setItem('playlists', JSON.stringify(state.playlists)); }
-
-  U.q('#create-pls').addEventListener('click', () => {
-    const name = (U.q('#new-pls').value||'').trim(); if(!name) return;
-    ensurePlaylist(name); renderPlaylists(); U.q('#new-pls').value='';
-  });
-  U.q('#smart-pls').addEventListener('click', () => {
-    ensurePlaylist('Smart · Recientes');
-    state.playlists.find(p=>p.name==='Smart · Recientes').ids = state.songs.slice(-12).map(s=>s.id);
-    ensurePlaylist('Smart · Relajado');
-    state.playlists.find(p=>p.name==='Smart · Relajado').ids = state.songs.filter(s=>s.moods?.includes('Relajado')).slice(0,12).map(s=>s.id);
-    ensurePlaylist('Smart · Enérgico');
-    state.playlists.find(p=>p.name==='Smart · Enérgico').ids = state.songs.filter(s=>s.moods?.includes('Enérgico')).slice(0,12).map(s=>s.id);
-    renderPlaylists();
-  });
-
-  function renderPlaylists(){
-    const wrap = U.q('#pls-list'); if(!wrap) return;
-    wrap.innerHTML = state.playlists.map(p => {
-      const any = state.songs.find(s=> p.ids.includes(s.id));
-      const cover = p.cover || any?.cover || 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=300&auto=format&fit=crop';
-      return `<div class="card">
-        <div class="cover"><img src="${cover}" alt="${p.name}"></div>
-        <div class="title">${p.name}</div>
-        <div class="subtitle">${p.ids.length} canciones</div>
-        <div style="display:flex;gap:6px;margin-top:8px">
-          <button class="btn" data-open="${p.name}">Abrir</button>
-          <button class="btn" data-cover="${p.name}">Cambiar portada</button>
-          <button class="btn" data-del="${p.name}">Eliminar</button>
-        </div>
-      </div>`;
-    }).join('');
-
-    wrap.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', e => {
-      const name=e.currentTarget.getAttribute('data-open'); const p=state.playlists.find(x=>x.name===name); if(!p) return;
-      const first = p.ids[0]; const idx = state.songs.findIndex(s=>s.id===first); if(idx>=0) playSongByIndex(idx);
-    }));
-    wrap.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { const name=e.currentTarget.getAttribute('data-del'); state.playlists = state.playlists.filter(p=>p.name!==name); savePlaylists(); renderPlaylists(); }));
-    wrap.querySelectorAll('[data-cover]').forEach(b => b.addEventListener('click', e => {
-      const name=e.currentTarget.getAttribute('data-cover'); const fileInput=U.q('#pls-cover-file');
-      fileInput.onchange = ev => {
-        const f=ev.target.files?.[0]; if(!f) return;
-        const r=new FileReader();
-        r.onload = () => { const p=state.playlists.find(x=>x.name===name); if(p){ p.cover=r.result; savePlaylists(); renderPlaylists(); } };
-        r.readAsDataURL(f);
-      };
-      fileInput.click();
-    }));
-  }
-
-  /* ===================== CALENDARIO / AGENDA ===================== */
-  let monthOffset = 0;
-  U.q('#prev-month').addEventListener('click', () => { monthOffset--; renderCalendar(); });
-  U.q('#next-month').addEventListener('click', () => { monthOffset++; renderCalendar(); });
-
-  function renderCalendar(){
-    const d = new Date(); const cur = new Date(d.getFullYear(), d.getMonth(), 1); cur.setMonth(cur.getMonth()+monthOffset);
-    const y=cur.getFullYear(), m=cur.getMonth(); U.q('#month-title').textContent = cur.toLocaleString('es-ES',{month:'long', year:'numeric'});
-    const first = new Date(y,m,1); let start = first.getDay(); start = start===0?6:start-1; const dim = new Date(y,m+1,0).getDate();
-    const G = U.q('#cal-grid'); G.innerHTML='';
-    ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(h => { const hd=U.el('div',{class:'cal-head'}); hd.textContent=h; G.appendChild(hd); });
-    for(let i=0;i<start;i++){ const ph=U.el('div',{class:'cal-day'}); ph.style.visibility='hidden'; G.appendChild(ph); }
-    const today = new Date();
-    for(let day=1; day<=dim; day++){
-      const cell = U.el('div',{class:'cal-day'}); const dateKey = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
-      if(today.getFullYear()===y && today.getMonth()===m && today.getDate()===day) cell.classList.add('today');
-      cell.innerHTML = `<div style="font-weight:700">${day}</div><div class="dotwrap"></div>`;
-      const dots = cell.querySelector('.dotwrap');
-      const items = state.events.filter(ev => ev.date===dateKey);
-      if(items.some(i=>i.type==='task')) dots.appendChild(U.el('div',{class:'dot task'}));
-      if(items.some(i=>i.type==='note')) dots.appendChild(U.el('div',{class:'dot note'}));
-      if(items.some(i=>i.type==='birthday')) dots.appendChild(U.el('div',{class:'dot birthday'}));
-      cell.addEventListener('click', () => openDay(dateKey));
-      G.appendChild(cell);
+function startYTProgressTimer(){
+  stopYTProgressTimer();
+  state.yt.timer = setInterval(() => {
+    if(state.yt.player){
+      const cur = state.yt.player.getCurrentTime()||0;
+      const dur = state.yt.player.getDuration()||0;
+      U.q('#tcur').textContent = U.fmt(cur);
+      U.q('#ttot').textContent = U.fmt(dur);
+      U.q('#bar').style.width = dur? (cur/dur*100)+'%':'0%';
     }
-    renderAgenda();
-  }
+  }, 250);
+}
+function stopYTProgressTimer(){ if(state.yt.timer) { clearInterval(state.yt.timer); state.yt.timer=null; } }
 
-  function renderAgenda(){
-    const from = new Date(); const to = new Date(from.getFullYear(), from.getMonth(), from.getDate()+30);
-    const lst = state.events.filter(ev => new Date(ev.date)>=new Date(from.toDateString()) && new Date(ev.date)<=to)
-      .sort((a,b)=> (new Date(a.date)-new Date(b.date)) || ((b.priority||1)-(a.priority||1)) );
-    U.q('#agenda').innerHTML = lst.map(ev => `<div class="panel" style="padding:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
-      <div><span style="font-size:12px;opacity:.8">${ev.type}</span> <b>${ev.title}</b> · ${ev.date}${ev.time? ' · '+ev.time:''}</div>
-      <div><button class="btn" data-done="${ev.id}">${ev.done?'✅':'⬜'}</button> <button class="btn" data-del="${ev.id}">🗑️</button></div>
-    </div>`).join('') || '<div class="panel" style="padding:8px">Sin próximos eventos</div>';
-    U.qa('#agenda [data-done]').forEach(b=> b.addEventListener('click', e=> toggleDone(e.currentTarget.getAttribute('data-done'))));
-    U.qa('#agenda [data-del]').forEach(b=> b.addEventListener('click', e=> removeEvent(e.currentTarget.getAttribute('data-del'))));
-  }
+U.q('#yt-toggle').addEventListener('click', () => {
+  state.yt.visible = !state.yt.visible;
+  U.q('#yt').classList.toggle('visible', state.yt.visible);
+  U.q('#yt-toggle').textContent = state.yt.visible ? '🙈' : '📺';
+});
 
-  function openDay(dateKey){
-    U.q('#day-title').textContent = `📅 ${dateKey}`; const list = U.q('#day-list');
-    const items = state.events.filter(ev => ev.date===dateKey).sort((a,b)=> (b.priority||1)-(a.priority||1));
-    list.innerHTML = items.map(ev => `<div class="panel" style="padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-      <div><span style="font-size:12px;opacity:.8">${ev.type}</span> <b>${ev.title}</b> ${ev.time? ' · '+ev.time:''}</div>
-      <div><button class="btn" data-done="${ev.id}">${ev.done?'✅':'⬜'}</button> <button class="btn" data-del="${ev.id}">🗑️</button></div>
-    </div>`).join('') || '<div class="panel" style="padding:8px">Sin eventos</div>';
-    U.qa('#modal-day [data-done]').forEach(b=> b.addEventListener('click', e=> toggleDone(e.currentTarget.getAttribute('data-done'), true)));
-    U.qa('#modal-day [data-del]').forEach(b=> b.addEventListener('click', e=> removeEvent(e.currentTarget.getAttribute('data-del'), true)));
-    U.q('#ev-save').onclick = () => {
-      const t=(U.q('#ev-title').value||'').trim(); if(!t) return;
-      const ev={ id: 'ev-'+Date.now(), title:t, type:U.q('#ev-type').value, time:(U.q('#ev-time').value||'').trim(), priority:Number(U.q('#ev-priority').value)||1, done:false, date:dateKey };
-      state.events.push(ev); saveEvents(); renderCalendar(); openDay(dateKey);
-      U.q('#ev-title').value=''; U.q('#ev-time').value='';
-    };
-    U.q('#modal-day').classList.add('active');
-  }
-  U.qa('#modal-day [data-close]').forEach(x => x.addEventListener('click', () => U.q('#modal-day').classList.remove('active')));
+/* ===================== BIBLIOTECA ===================== */
+const exts = ['.mp3','.wav','.ogg','.m4a','.flac'];
+U.q('#btn-upload').addEventListener('click', () => U.q('#file-upload').click());
+U.q('#btn-folder').addEventListener('click', () => U.q('#folder-upload').click());
+U.q('#file-upload').addEventListener('change', e => handleFiles(e.target.files));
+U.q('#folder-upload').addEventListener('change', e => handleFiles(e.target.files));
 
-  function toggleDone(id, inDay){ const ev=state.events.find(e=>e.id===id); if(!ev) return; ev.done=!ev.done; saveEvents(); renderCalendar(); if(inDay) openDay(ev.date); }
-  function removeEvent(id, inDay){ state.events = state.events.filter(e=>e.id!==id); saveEvents(); renderCalendar(); if(inDay) U.q('#modal-day').classList.remove('active'); }
-  function saveEvents(){ localStorage.setItem('events', JSON.stringify(state.events)); }
+U.q('#btn-yt').addEventListener('click', () => U.q('#modal-yt').classList.add('active'));
+U.q('#m-yt-save').addEventListener('click', async () => {
+  const url = U.q('#m-yt-url').value.trim();
+  const id  = url.match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=))([^&\n?#]+)/)?.[1];
+  if(!id) return alert('URL inválida');
 
-  U.q('#event-search').addEventListener('input', e => {
-    const q=(e.target.value||'').toLowerCase();
-    const results = state.events.filter(ev => ev.title.toLowerCase().includes(q));
-    U.q('#agenda').innerHTML = results.map(ev => `<div class="panel" style="padding:8px;margin-bottom:8px">${ev.title} · ${ev.date}</div>`).join('') || '<div class="panel" style="padding:8px">Sin coincidencias</div>';
-  });
-  U.q('#btn-export').addEventListener('click', () => { const blob=new Blob([JSON.stringify(state.events,null,2)],{type:'application/json'}); const a=U.el('a',{download:'agenda.json'}); a.href=URL.createObjectURL(blob); a.click(); });
-  U.q('#btn-import').addEventListener('click', () => U.q('#import-file').click());
-  U.q('#import-file').addEventListener('change', async e => { const f=e.target.files?.[0]; if(!f) return; const txt=await f.text(); try{ const data=JSON.parse(txt); if(Array.isArray(data)){ state.events=data; saveEvents(); renderCalendar(); }}catch{ alert('Archivo inválido'); } });
-  U.q('#quick-add').addEventListener('click', () => {
-    const t=prompt('Título de la tarea/nota:'); if(!t) return;
-    const d=new Date(); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
-    state.events.push({ id:'ev-'+Date.now(), title:t, type:'task', priority:2, done:false, date:key}); saveEvents(); renderCalendar();
-  });
-
-  /* ===================== AUTO-ETIQUETADO (2 géneros + 3 emociones) ===================== */
-  function autoTagSong(song){
-    const title=(song.title||'').toLowerCase(); const artist=(song.artist||'').toLowerCase(); const hay=w => title.includes(w)||artist.includes(w);
-    const genreMap = {
-      Rock:['rock','guitar','metal','punk','hard'],
-      Pop:['pop','hit','love'],
-      Jazz:['jazz','swing','sax'],
-      Blues:['blues'],
-      Classical:['beethoven','mozart','bach','classical','orchestra'],
-      Electronic:['edm','electro','techno','house','trance','dubstep'],
-      'Hip Hop':['hip hop','rap','trap'],
-      Indie:['indie','alternative'],
-      Reggaeton:['reggaeton'],
-      Latin:['latino','salsa','bachata','cumbia'],
-      Soul:['soul','motown'],
-      'R&B':['r&b','rnb']
-    };
-    const moodMap = {
-      Feliz:['happy','feliz','smile','sun','summer','buena'],
-      Triste:['sad','triste','cry','lonely'],
-      'Enérgico':['power','fire','boom','fast','speed','dance','party','fiesta','rock'],
-      Relajado:['chill','calm','lofi','relax','slow'],
-      Romántico:['love','amor','kiss','heart'],
-      Motivador:['win','rise','up','motivation','fuerza','épico'],
-      Nostálgico:['nostalgia','remember','old','retro'],
-      Melancólico:['melancholy','melancol'],
-      Festivo:['party','fiesta','celebr'],
-      Inspirador:['dream','sueño','hope','inspire']
-    };
-    const G=new Set(); for(const [g,keys] of Object.entries(genreMap)) if(keys.some(k=>hay(k))) G.add(g);
-    if(G.size<2) G.add('Pop'); if(G.size<2) G.add('Indie'); song.genres=[...G].slice(0,2);
-    const M=[]; for(const [m,keys] of Object.entries(moodMap)) if(keys.some(k=>hay(k))) M.push(m);
-    const ensure=v=>{ if(!M.includes(v)) M.push(v); };
-    while(M.length<3){ ensure(['Feliz','Relajado','Enérgico','Motivador','Romántico'][M.length%5]); }
-    song.moods=M.slice(0,3);
-  }
-
-  /* ===================== ARRANQUE ===================== */
-  // Asegura que cualquier canción cargada previamente tenga carátula y tags consistentes
-  (async function bootstrapCovers(){
-    for(const s of state.songs){
-      if(!s.cover){ try{ await ensureCoverViaYouTube(s); }catch{} }
-      if(!s.genres?.length || s.genres.length<2 || !s.moods?.length || s.moods.length<3){ try{ autoTagSong(s); }catch{} }
+  // Obtener metadatos reales de YouTube (oEmbed)
+  let realTitle='', realAuthor='';
+  try{
+    const r = await fetch(`https://www.youtube.com/oembed?url=${encodeURIComponent(url)}&format=json`);
+    if(r.ok){
+      const j = await r.json();
+      realTitle = j.title || '';
+      realAuthor = j.author_name || '';
     }
-    persistSongs();
-  })();
+  }catch{}
 
+  const s = {
+    id: Date.now(),
+    title: (U.q('#m-yt-title').value || realTitle || 'YouTube').trim(),
+    artist: (U.q('#m-yt-artist').value || realAuthor || 'YouTube').trim(),
+    type: 'youtube',
+    youtubeId: id,
+    cover: `https://img.youtube.com/vi/${id}/mqdefault.jpg`,
+    genres: [], moods: [], album: 'YouTube'
+  };
+  autoTagSong(s); ensureCover(s);
+  state.songs.push(s); persistSongs(); renderSongs();
+
+  U.q('#modal-yt').classList.remove('active');
+  U.q('#m-yt-url').value = ''; U.q('#m-yt-title').value=''; U.q('#m-yt-artist').value='';
+});
+
+async function handleFiles(files){
+  const arr = [...files].filter(f => exts.some(x => f.name.toLowerCase().endsWith(x)));
+  for(const file of arr){
+    const base = file.name.replace(/\.[^/.]+$/, '');
+    const s = { id: Date.now()+Math.random(), title: base, artist:'Desconocido', album:'Archivo Local', type:'local', blob:file, cover:null, genres:[], moods:[], fileName:file.name, date:new Date().toISOString() };
+    state.songs.push(s);
+    try{ await extractMetadata(s); }catch{}
+    try{ await ensureCoverViaYouTube(s); }catch{}
+    try{ autoTagSong(s); }catch{}
+  }
+  persistSongs(); renderSongs(); U.announce(`${arr.length} canciones añadidas`);
+}
+
+function persistSongs(){ localStorage.setItem('songs', JSON.stringify(state.songs.map(({blob, ...rest}) => rest))); }
+
+// Metadatos -> portada embebida si existe
+async function extractMetadata(song){
+  if(!song.blob) return;
+  return new Promise(res => {
+    jsmediatags.read(song.blob, {
+      onSuccess: tag => {
+        const t=tag.tags||{};
+        if(t.title)  song.title  = t.title;
+        if(t.artist) song.artist = t.artist;
+        if(t.album)  song.album  = t.album;
+        if(t.picture && t.picture.data && t.picture.format){
+          try{
+            const bytes = new Uint8Array(t.picture.data);
+            const blob  = new Blob([bytes], {type:t.picture.format});
+            song.cover  = URL.createObjectURL(blob);
+          }catch{}
+        }
+        res();
+      },
+      onError: () => res()
+    });
+  });
+}
+
+/* Portadas: nunca sin imagen */
+async function ensureCoverViaYouTube(song){
+  if(song.cover) return;
+  const q = `${song.artist||''} ${song.title||''}`.trim() || song.title || song.artist;
+  const url = await fetchYouTubeThumb(q);
+  if(url){ song.cover=url; return; }
+  await ensureCoverFallback(song);
+}
+async function ensureCoverFallback(song){
+  if(song.cover) return;
+  song.cover = `https://source.unsplash.com/featured/400x400?${encodeURIComponent(song.artist||song.title||'music album')}`;
+}
+async function ensureCover(song){ if(!song.cover) await ensureCoverViaYouTube(song); }
+
+async function fetchYouTubeThumb(query){
+  if(!query) return null;
+  // Intento 1: Piped
+  try{
+    const r = await fetch(`https://piped.video/api/v1/search?q=${encodeURIComponent(query)}&region=ES&type=video`);
+    if(r.ok){ const j=await r.json(); const v=j?.[0]; if(v?.url){ const id=(v.url.split('/watch?v=')[1]||'').split('&')[0]; if(id) return `https://img.youtube.com/vi/${id}/mqdefault.jpg`; } }
+  }catch{}
+  // Intento 2: Invidious
+  try{
+    const r = await fetch(`https://yt.artemislena.eu/api/v1/search?q=${encodeURIComponent(query)}`);
+    if(r.ok){ const j=await r.json(); const v=j?.[0]; if(v?.videoId) return `https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`; }
+  }catch{}
+  return null;
+}
+
+function renderSongs(){
+  const g = U.q('#grid'); if(!g) return;
+  const gf = U.q('#f-genre').value; const mf = U.q('#f-mood').value; const q=(U.q('#f-search').value||'').toLowerCase();
+  const list = state.songs.filter(s =>
+    (!gf || s.genres?.includes(gf)) &&
+    (!mf || s.moods?.includes(mf)) &&
+    (!q || (s.title||'').toLowerCase().includes(q) || (s.artist||'').toLowerCase().includes(q))
+  );
+  if(list.length===0){ g.innerHTML='<div class="panel" style="padding:16px">No hay canciones</div>'; return; }
+
+  g.innerHTML = list.map(s => {
+    const playing = state.idx>=0 && state.songs[state.idx]?.id===s.id ? 'outline: var(--focus);' : '';
+    return `<div class="card" style="${playing}" data-id="${s.id}">
+      <div class="cover">${ s.cover? `<img src="${s.cover}" alt="${s.title}">`: '🎵'}</div>
+      <div class="title">${s.title||''}</div>
+      <div class="subtitle">${s.artist||''}</div>
+      <div class="subtitle">${(s.genres||[]).join(', ')} · ${(s.moods||[]).join(', ')}</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn primary" data-play>▶️</button>
+        <button class="btn" data-add>➕ Playlist</button>
+        <button class="btn" data-del>🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  g.querySelectorAll('[data-play]').forEach(b => b.addEventListener('click', e => { const id=Number(e.currentTarget.closest('.card').dataset.id); const i=state.songs.findIndex(x=>x.id===id); playSongByIndex(i); }));
+  g.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { const id=Number(e.currentTarget.closest('.card').dataset.id); const i=state.songs.findIndex(x=>x.id===id); if(i>=0){ if(state.idx===i) U.q('#stop').click(); state.songs.splice(i,1); persistSongs(); renderSongs(); } }));
+  g.querySelectorAll('[data-add]').forEach(b => b.addEventListener('click', e => openAddToPlaylist(Number(e.currentTarget.closest('.card').dataset.id))));
+  populateFilters();
+}
+
+function populateFilters(){
+  const genres=new Set(), moods=new Set(); state.songs.forEach(s => { (s.genres||[]).forEach(x=>genres.add(x)); (s.moods||[]).forEach(x=>moods.add(x)); });
+  U.q('#f-genre').innerHTML = '<option value="">Todos los géneros</option>' + [...genres].sort().map(x=>`<option>${x}</option>`).join('');
+  U.q('#f-mood').innerHTML  = '<option value="">Todos los estados</option>' + [...moods].sort().map(x=>`<option>${x}</option>`).join('');
+}
+
+/* ===================== PLAYLISTS ===================== */
+function openAddToPlaylist(songId){
+  const name = prompt('Añadir a playlist: escribe el nombre (o deja vacío para elegir existente)');
+  if(name){ ensurePlaylist(name); addSongToPlaylist(name, songId); renderPlaylists(); return; }
+  const list = state.playlists.map(p=>p.name).join('\n');
+  const pick = prompt('Elige una playlist existente:\n'+list);
+  if(pick){ ensurePlaylist(pick); addSongToPlaylist(pick, songId); renderPlaylists(); }
+}
+
+function ensurePlaylist(name){ if(!state.playlists.find(p=>p.name===name)) state.playlists.push({ name, cover:null, ids:[] }); savePlaylists(); }
+function addSongToPlaylist(name, id){
+  const pl = state.playlists.find(p=>p.name===name);
+  if(!pl.ids.includes(id)) pl.ids.push(id);
+  if(!pl.cover){ const s=state.songs.find(x=>x.id===id); if(s?.cover) pl.cover=s.cover; }
+  savePlaylists();
+}
+function savePlaylists(){ localStorage.setItem('playlists', JSON.stringify(state.playlists)); }
+
+U.q('#create-pls').addEventListener('click', () => {
+  const name = (U.q('#new-pls').value||'').trim(); if(!name) return;
+  ensurePlaylist(name); renderPlaylists(); U.q('#new-pls').value='';
+});
+U.q('#smart-pls').addEventListener('click', () => {
+  ensurePlaylist('Smart · Recientes');
+  state.playlists.find(p=>p.name==='Smart · Recientes').ids = state.songs.slice(-12).map(s=>s.id);
+  ensurePlaylist('Smart · Relajado');
+  state.playlists.find(p=>p.name==='Smart · Relajado').ids = state.songs.filter(s=>s.moods?.includes('Relajado')).slice(0,12).map(s=>s.id);
+  ensurePlaylist('Smart · Enérgico');
+  state.playlists.find(p=>p.name==='Smart · Enérgico').ids = state.songs.filter(s=>s.moods?.includes('Enérgico')).slice(0,12).map(s=>s.id);
+  renderPlaylists();
+});
+
+function renderPlaylists(){
+  const wrap = U.q('#pls-list'); if(!wrap) return;
+  wrap.innerHTML = state.playlists.map(p => {
+    const any = state.songs.find(s=> p.ids.includes(s.id));
+    const cover = p.cover || any?.cover || 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?q=80&w=300&auto=format&fit=crop';
+    return `<div class="card">
+      <div class="cover"><img src="${cover}" alt="${p.name}"></div>
+      <div class="title">${p.name}</div>
+      <div class="subtitle">${p.ids.length} canciones</div>
+      <div style="display:flex;gap:6px;margin-top:8px">
+        <button class="btn" data-open="${p.name}">Abrir</button>
+        <button class="btn" data-cover="${p.name}">Cambiar portada</button>
+        <button class="btn" data-del="${p.name}">Eliminar</button>
+      </div>
+    </div>`;
+  }).join('');
+
+  wrap.querySelectorAll('[data-open]').forEach(b => b.addEventListener('click', e => {
+    const name=e.currentTarget.getAttribute('data-open'); const p=state.playlists.find(x=>x.name===name); if(!p) return;
+    const first = p.ids[0]; const idx = state.songs.findIndex(s=>s.id===first); if(idx>=0) playSongByIndex(idx);
+  }));
+  wrap.querySelectorAll('[data-del]').forEach(b => b.addEventListener('click', e => { const name=e.currentTarget.getAttribute('data-del'); state.playlists = state.playlists.filter(p=>p.name!==name); savePlaylists(); renderPlaylists(); }));
+  wrap.querySelectorAll('[data-cover]').forEach(b => b.addEventListener('click', e => {
+    const name=e.currentTarget.getAttribute('data-cover'); const fileInput=U.q('#pls-cover-file');
+    fileInput.onchange = ev => {
+      const f=ev.target.files?.[0]; if(!f) return;
+      const r=new FileReader();
+      r.onload = () => { const p=state.playlists.find(x=>x.name===name); if(p){ p.cover=r.result; savePlaylists(); renderPlaylists(); } };
+      r.readAsDataURL(f);
+    };
+    fileInput.click();
+  }));
+}
+
+/* ===================== CALENDARIO / AGENDA ===================== */
+let monthOffset = 0;
+U.q('#prev-month').addEventListener('click', () => { monthOffset--; renderCalendar(); });
+U.q('#next-month').addEventListener('click', () => { monthOffset++; renderCalendar(); });
+
+function renderCalendar(){
+  const d = new Date(); const cur = new Date(d.getFullYear(), d.getMonth(), 1); cur.setMonth(cur.getMonth()+monthOffset);
+  const y=cur.getFullYear(), m=cur.getMonth(); U.q('#month-title').textContent = cur.toLocaleString('es-ES',{month:'long', year:'numeric'});
+  const first = new Date(y,m,1); let start = first.getDay(); start = start===0?6:start-1; const dim = new Date(y,m+1,0).getDate();
+  const G = U.q('#cal-grid'); G.innerHTML='';
+  ['Lun','Mar','Mié','Jue','Vie','Sáb','Dom'].forEach(h => { const hd=U.el('div',{class:'cal-head'}); hd.textContent=h; G.appendChild(hd); });
+  for(let i=0;i<start;i++){ const ph=U.el('div',{class:'cal-day'}); ph.style.visibility='hidden'; G.appendChild(ph); }
+  const today = new Date();
+  for(let day=1; day<=dim; day++){
+    const cell = U.el('div',{class:'cal-day'}); const dateKey = `${y}-${String(m+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+    if(today.getFullYear()===y && today.getMonth()===m && today.getDate()===day) cell.classList.add('today');
+    cell.innerHTML = `<div style="font-weight:700">${day}</div><div class="dotwrap"></div>`;
+    const dots = cell.querySelector('.dotwrap');
+    const items = state.events.filter(ev => ev.date===dateKey);
+    if(items.some(i=>i.type==='task')) dots.appendChild(U.el('div',{class:'dot task'}));
+    if(items.some(i=>i.type==='note')) dots.appendChild(U.el('div',{class:'dot note'}));
+    if(items.some(i=>i.type==='birthday')) dots.appendChild(U.el('div',{class:'dot birthday'}));
+    cell.addEventListener('click', () => openDay(dateKey));
+    G.appendChild(cell);
+  }
+  renderAgenda();
+}
+
+function renderAgenda(){
+  const from = new Date(); const to = new Date(from.getFullYear(), from.getMonth(), from.getDate()+30);
+  const lst = state.events.filter(ev => new Date(ev.date)>=new Date(from.toDateString()) && new Date(ev.date)<=to)
+    .sort((a,b)=> (new Date(a.date)-new Date(b.date)) || ((b.priority||1)-(a.priority||1)) );
+  U.q('#agenda').innerHTML = lst.map(ev => `<div class="panel" style="padding:8px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center">
+    <div><span style="font-size:12px;opacity:.8">${ev.type}</span> <b>${ev.title}</b> · ${ev.date}${ev.time? ' · '+ev.time:''}</div>
+    <div><button class="btn" data-done="${ev.id}">${ev.done?'✅':'⬜'}</button> <button class="btn" data-del="${ev.id}">🗑️</button></div>
+  </div>`).join('') || '<div class="panel" style="padding:8px">Sin próximos eventos</div>';
+  U.qa('#agenda [data-done]').forEach(b=> b.addEventListener('click', e=> toggleDone(e.currentTarget.getAttribute('data-done'))));
+  U.qa('#agenda [data-del]').forEach(b=> b.addEventListener('click', e=> removeEvent(e.currentTarget.getAttribute('data-del'))));
+}
+
+function openDay(dateKey){
+  U.q('#day-title').textContent = `📅 ${dateKey}`; const list = U.q('#day-list');
+  const items = state.events.filter(ev => ev.date===dateKey).sort((a,b)=> (b.priority||1)-(a.priority||1));
+  list.innerHTML = items.map(ev => `<div class="panel" style="padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+    <div><span style="font-size:12px;opacity:.8">${ev.type}</span> <b>${ev.title}</b> ${ev.time? ' · '+ev.time:''}</div>
+    <div><button class="btn" data-done="${ev.id}">${ev.done?'✅':'⬜'}</button> <button class="btn" data-del="${ev.id}">🗑️</button></div>
+  </div>`).join('') || '<div class="panel" style="padding:8px">Sin eventos</div>';
+  U.qa('#modal-day [data-done]').forEach(b=> b.addEventListener('click', e=> toggleDone(e.currentTarget.getAttribute('data-done'), true)));
+  U.qa('#modal-day [data-del]').forEach(b=> b.addEventListener('click', e=> removeEvent(e.currentTarget.getAttribute('data-del'), true)));
+  U.q('#ev-save').onclick = () => {
+    const t=(U.q('#ev-title').value||'').trim(); if(!t) return;
+    const ev={ id: 'ev-'+Date.now(), title:t, type:U.q('#ev-type').value, time:(U.q('#ev-time').value||'').trim(), priority:Number(U.q('#ev-priority').value)||1, done:false, date:dateKey };
+    state.events.push(ev); saveEvents(); renderCalendar(); openDay(dateKey);
+    U.q('#ev-title').value=''; U.q('#ev-time').value='';
+  };
+  U.q('#modal-day').classList.add('active');
+}
+U.qa('#modal-day [data-close]').forEach(x => x.addEventListener('click', () => U.q('#modal-day').classList.remove('active')));
+
+function toggleDone(id, inDay){ const ev=state.events.find(e=>e.id===id); if(!ev) return; ev.done=!ev.done; saveEvents(); renderCalendar(); if(inDay) openDay(ev.date); }
+function removeEvent(id, inDay){ state.events = state.events.filter(e=>e.id!==id); saveEvents(); renderCalendar(); if(inDay) U.q('#modal-day').classList.remove('active'); }
+function saveEvents(){ localStorage.setItem('events', JSON.stringify(state.events)); }
+
+U.q('#event-search').addEventListener('input', e => {
+  const q=(e.target.value||'').toLowerCase();
+  const results = state.events.filter(ev => ev.title.toLowerCase().includes(q));
+  U.q('#agenda').innerHTML = results.map(ev => `<div class="panel" style="padding:8px;margin-bottom:8px">${ev.title} · ${ev.date}</div>`).join('') || '<div class="panel" style="padding:8px">Sin coincidencias</div>';
+});
+U.q('#btn-export').addEventListener('click', () => { const blob=new Blob([JSON.stringify(state.events,null,2)],{type:'application/json'}); const a=U.el('a',{download:'agenda.json'}); a.href=URL.createObjectURL(blob); a.click(); });
+U.q('#btn-import').addEventListener('click', () => U.q('#import-file').click());
+U.q('#import-file').addEventListener('change', async e => { const f=e.target.files?.[0]; if(!f) return; const txt=await f.text(); try{ const data=JSON.parse(txt); if(Array.isArray(data)){ state.events=data; saveEvents(); renderCalendar(); }}catch{ alert('Archivo inválido'); } });
+U.q('#quick-add').addEventListener('click', () => {
+  const t=prompt('Título de la tarea/nota:'); if(!t) return;
+  const d=new Date(); const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  state.events.push({ id:'ev-'+Date.now(), title:t, type:'task', priority:2, done:false, date:key}); saveEvents(); renderCalendar();
+});
+
+/* ===================== AUTO-ETIQUETADO (2 géneros + 3 emociones) ===================== */
+function autoTagSong(song){
+  const title=(song.title||'').toLowerCase(); const artist=(song.artist||'').toLowerCase(); const hay=w => title.includes(w)||artist.includes(w);
+  const genreMap = {
+    Rock:['rock','guitar','metal','punk','hard'],
+    Pop:['pop','hit','love'],
+    Jazz:['jazz','swing','sax'],
+    Blues:['blues'],
+    Classical:['beethoven','mozart','bach','classical','orchestra','piano','violin'],
+    Electronic:['edm','electro','techno','house','trance','dubstep','synth'],
+    'Hip Hop':['hip hop','rap','trap'],
+    Indie:['indie','alternative','alt'],
+    Reggaeton:['reggaeton'],
+    Latin:['latino','salsa','bachata','cumbia','tango'],
+    Soul:['soul','motown'],
+    'R&B':['r&b','rnb']
+  };
+  const moodMap = {
+    Feliz:['happy','feliz','smile','sun','summer','buena'],
+    Triste:['sad','triste','cry','lonely'],
+    'Enérgico':['power','fire','boom','fast','speed','dance','party','fiesta','rock'],
+    Relajado:['chill','calm','lofi','relax','slow','ambient'],
+    Romántico:['love','amor','kiss','heart'],
+    Motivador:['win','rise','up','motivation','fuerza','épico','epic'],
+    Nostálgico:['nostalgia','remember','old','retro','classic'],
+    Melancólico:['melancholy','melancol','blue'],
+    Festivo:['party','fiesta','celebr','festival'],
+    Inspirador:['dream','sueño','hope','inspire','wings']
+  };
+  const G=new Set(); for(const [g,keys] of Object.entries(genreMap)) if(keys.some(k=>hay(k))) G.add(g);
+  if(G.size<2) G.add('Pop'); if(G.size<2) G.add('Indie'); song.genres=[...G].slice(0,2);
+  const M=[]; for(const [m,keys] of Object.entries(moodMap)) if(keys.some(k=>hay(k))) M.push(m);
+  const ensure=v=>{ if(!M.includes(v)) M.push(v); };
+  while(M.length<3){ ensure(['Feliz','Relajado','Enérgico','Motivador','Romántico'][M.length%5]); }
+  song.moods=M.slice(0,3);
+}
+
+/* ===================== INICIO ===================== */
+function applyAttrs(){
+  document.documentElement.setAttribute('data-color-scheme', state.colorScheme);
+  document.documentElement.setAttribute('data-theme', state.theme);
+}
+applyAttrs();
+
+/* Precargar eventos/tareas próximos 20 días (si no hay) */
+(function seedNext20(){
+  if(state.events.length>0) return;
+  const now = new Date();
+  for(let i=1;i<=20;i++){
+    const d = new Date(now); d.setDate(now.getDate()+i);
+    const key=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    if(i%5===0) state.events.push({id:'ev-'+Date.now()+i, title:'Cumple de Amig@ '+i, type:'birthday', time:'', priority:1, done:false, date:key});
+    if(i%2===0) state.events.push({id:'ev-'+Date.now()+'a'+i, title:'Estudiar 1h (tema '+i+')', type:'task', time:'18:00', priority:3, done:false, date:key});
+    if(i%3===0) state.events.push({id:'ev-'+Date.now()+'n'+i, title:'Nota: idea playlist '+i, type:'note', time:'', priority:2, done:false, date:key});
+  }
+  saveEvents();
+})();
+
+/* Cargar canciones desde GitHub SIEMPRE al inicio (aunque no añadas locales) */
+(async function bootstrap(){
+  // 1) Cargar GH si aún no están cargadas en localStorage (o forzar refresco si faltan portadas)
+  try{
+    const gh = await fetchGitHubSongs();
+    // Merge por título/URL (evita duplicados si ya existían)
+    const has = new Set(state.songs.map(s => s.type+'|'+(s.fileUrl||s.youtubeId||s.title)));
+    for(const s of gh){
+      const key = s.type+'|'+(s.fileUrl||s.youtubeId||s.title);
+      if(!has.has(key)) state.songs.push(s);
+    }
+  }catch(e){ console.warn(e); }
+
+  // 2) Asegurar portadas y auto-tagging (nunca sin imagen)
+  for(const s of state.songs){
+    try{ if(!s.cover) await ensureCoverViaYouTube(s); }catch{}
+    try{
+      if(!s.genres?.length || s.genres.length<2 || !s.moods?.length || s.moods.length<3){
+        autoTagSong(s);
+      }
+    }catch{}
+  }
+  persistSongs();
+
+  // Renderizar
   renderCalendar(); renderSongs(); renderPlaylists(); renderTasks();
+})();
 
-  function renderTasks(){
-    const cont=U.q('#tasks-list');
-    const lst=[...state.events].filter(e=>e.type==='task' && !e.done)
-      .sort((a,b)=> (new Date(a.date)-new Date(b.date)) || ((b.priority||1)-(a.priority||1)));
-    cont.innerHTML = lst.map(e => `<div class="panel" style="padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
-      <div><b>${e.title}</b> · ${e.date}</div><button class="btn" data-done="${e.id}">Marcar</button>
-    </div>`).join('') || '<div class="panel" style="padding:8px">Sin tareas pendientes</div>';
-    cont.querySelectorAll('[data-done]').forEach(b => b.addEventListener('click', e => toggleDone(e.currentTarget.getAttribute('data-done'))));
-  }
-  </script>
+/* Vista tareas (urgencia) */
+function renderTasks(){
+  const cont=U.q('#tasks-list');
+  const lst=[...state.events].filter(e=>e.type==='task' && !e.done)
+    .sort((a,b)=> (new Date(a.date)-new Date(b.date)) || ((b.priority||1)-(a.priority||1)));
+  cont.innerHTML = lst.map(e => `<div class="panel" style="padding:8px;margin-bottom:6px;display:flex;justify-content:space-between;align-items:center">
+    <div><b>${e.title}</b> · ${e.date}${e.time?' · '+e.time:''}</div><button class="btn" data-done="${e.id}">Marcar</button>
+  </div>`).join('') || '<div class="panel" style="padding:8px">Sin tareas pendientes</div>';
+  cont.querySelectorAll('[data-done]').forEach(b => b.addEventListener('click', e => toggleDone(e.currentTarget.getAttribute('data-done'))));
+}
+
+/* Mini Player: mostrar/ocultar vídeo */
+U.q('#yt-toggle').textContent='📺'; // minimizado por defecto
+
+/* Eventos de teclado accesibles básicos */
+document.addEventListener('keydown', (e)=>{
+  if(e.code==='Space' && document.activeElement===document.body){ e.preventDefault(); U.q('#play').click(); }
+  if(e.code==='ArrowRight' && state.idx>=0){ e.preventDefault(); U.q('#next').click(); }
+  if(e.code==='ArrowLeft' && state.idx>=0){ e.preventDefault(); U.q('#prev').click(); }
+});
+
+/* Manejo fin de pista (común) */
+function onEnded(){
+  if(state.repeat==='one'){ playSongByIndex(state.idx); return; }
+  if(state.idx<state.songs.length-1) playSongByIndex(state.idx+1);
+  else if(state.repeat==='all') playSongByIndex(0);
+}
+</script>
 </body>
 </html>

@@ -2794,19 +2794,15 @@
       // ===== CARGAR MÚSICA DESDE /musica/ =====
       async function loadMusicFromFolder() {
         try {
-          console.log('📂 Intentando cargar manifest.json...');
+          console.log('📂 Cargando manifest.json...');
           const response = await fetch('./musica/manifest.json');
-
-          if (!response.ok) {
-            console.warn('⚠️ No se encontró manifest.json');
-            return;
-          }
+          if (!response.ok) return;
 
           const manifest = await response.json();
-          console.log(`📁 Cargando ${manifest.songs.length} canciones`);
+          console.log(`📁 ${manifest.songs.length} canciones encontradas`);
 
           for (const filename of manifest.songs) {
-            const song = {
+            songsLibrary.push({
               id: Date.now() + Math.random(),
               title: filename.replace(/\.mp3$/, '').replace(/_/g, ' '),
               artist: 'Artista Desconocido',
@@ -2823,18 +2819,15 @@
               genres: [],
               moods: [],
               autoTagged: false
-            };
-
-            songsLibrary.push(song);
+            });
           }
 
           populateFilters();
           renderBiblioteca();
           saveData();
           console.log(`✅ ${manifest.songs.length} canciones cargadas`);
-
         } catch (error) {
-          console.error('❌ Error:', error);
+          console.error('Error:', error);
         }
       }
 
@@ -4072,6 +4065,43 @@
       iframe.allowFullscreen = true;
       
       youtubeContainer.appendChild(iframe);
+
+      // Añadir controles personalizados debajo del video
+      const controls = document.createElement('div');
+      controls.className = 'youtube-controls';
+      controls.style.cssText = `
+        background: rgba(0,0,0,0.8);
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+        border-radius: 0 0 8px 8px;
+      `;
+
+      // Botón Anterior
+      const prevBtn = document.createElement('button');
+      prevBtn.innerHTML = '⏮️ Anterior';
+      prevBtn.style.cssText = 'padding: 8px 15px; cursor: pointer; background: #fff; border: none; border-radius: 5px; font-weight: bold;';
+      prevBtn.onclick = () => { previousSong(); };
+
+      // Botón Siguiente
+      const nextBtn = document.createElement('button');
+      nextBtn.innerHTML = '⏭️ Siguiente';
+      nextBtn.style.cssText = 'padding: 8px 15px; cursor: pointer; background: #fff; border: none; border-radius: 5px; font-weight: bold;';
+      nextBtn.onclick = () => { nextSong(); };
+
+      // Botón Detener
+      const stopBtn = document.createElement('button');
+      stopBtn.innerHTML = '⏹️ Detener';
+      stopBtn.style.cssText = 'padding: 8px 15px; cursor: pointer; background: #ff4444; color: white; border: none; border-radius: 5px; font-weight: bold;';
+      stopBtn.onclick = () => { stopPlayback(); };
+
+      controls.appendChild(prevBtn);
+      controls.appendChild(stopBtn);
+      controls.appendChild(nextBtn);
+
+      youtubeContainer.appendChild(controls);
+      console.log('🎮 Controles YouTube añadidos');
       
       // Mostrar botón de toggle
       const toggleBtn = document.getElementById('youtube-toggle-btn');

@@ -2790,6 +2790,57 @@
       applyAccessibility();
       renderCalendar();
       switchView('calendario');
+
+      // ===== CARGAR MÚSICA DESDE CARPETA /musica/ =====
+      async function loadMusicFromFolder() {
+        try {
+          const response = await fetch('/musica/manifest.json');
+          if (!response.ok) {
+            console.log('⚠️ No se encontró manifest.json en /musica/');
+            return;
+          }
+
+          const manifest = await response.json();
+          console.log(`📁 Cargando ${manifest.songs.length} canciones desde /musica/`);
+
+          for (const filename of manifest.songs) {
+            const song = {
+              id: Date.now() + Math.random(),
+              title: filename.replace(/\.mp3$/, '').replace(/_/g, ' '),
+              artist: 'Artista Desconocido',
+              album: 'Música Local',
+              duration: 0,
+              type: 'local',
+              url: `/musica/${filename}`,
+              fileName: filename,
+              isFavorite: false,
+              playCount: 0,
+              genre: 'Desconocido',
+              mood: 'neutral',
+              tags: ['local'],
+              genres: [],
+              moods: [],
+              autoTagged: false
+            };
+
+            songsLibrary.push(song);
+          }
+
+          populateFilters();
+          renderBiblioteca();
+          saveData();
+
+          console.log(`✅ Canciones cargadas desde /musica/: ${manifest.songs.length}`);
+
+        } catch (error) {
+          console.log('ℹ️ No se pudo cargar música desde /musica/:', error.message);
+        }
+      }
+
+      // Llamar al cargar la página
+      setTimeout(() => {
+        loadMusicFromFolder();
+      }, 1000);
       initAudioContext();
       initAccessibilityHandlers();
     }
@@ -3270,7 +3321,7 @@
         
         // Solo etiquetar si no está ya etiquetada
         if (!song.autoTagged) {
-          // const success = await autoTagSong(song); // Deshabilitado - Last.fm retorna 403
+          // const success = await autoTagSong(song); // Deshabilitado - Last.fm 403
           if (success) tagged++;
           
           // Actualizar progreso
@@ -3325,8 +3376,8 @@
       for (let i = 0; i < songsToTag.length; i++) {
         const song = songsToTag[i];
         
-        // const success = await autoTagSong(song); // Deshabilitado - Last.fm retorna 403
-        // if (success) tagged++; // Comentado - success no existe
+        // const success = await autoTagSong(song); // Deshabilitado - Last.fm 403
+        // if (success) tagged++;
         
         const progressCount = document.getElementById('progress-count');
         if (progressCount) {
@@ -3827,7 +3878,7 @@
         
         // Auto-etiquetar la canción de YouTube
         console.log('🏷️ Etiquetando automáticamente...');
-        // await autoTagSong(song); // Deshabilitado - Last.fm retorna 403
+        // await autoTagSong(song); // Deshabilitado - Last.fm 403
         
         console.log('✅ Canción de YouTube añadida y etiquetada:', song.title);
         announce(`Canción añadida: ${song.title} por ${song.artist}`);
@@ -4018,7 +4069,7 @@
       iframe.frameBorder = '0';
       
       // Sandbox con permisos completos
-      // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms'); // ELIMINADO - bloqueaba YouTube
+      // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms'); // ELIMINADO
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
       iframe.allowFullscreen = true;
       
@@ -4282,6 +4333,18 @@
       document.getElementById('miniPlayerArtist').textContent = currentSong.artist;
       updateTimeDisplay();
       updateProgressBar();
+      
+      // Ocultar mini-player para YouTube, mostrar solo para locales
+      const miniPlayer = document.getElementById('miniPlayer');
+      if (miniPlayer && currentSong) {
+        if (currentSong.type === 'youtube') {
+          miniPlayer.style.opacity = '0.3';
+          miniPlayer.style.pointerEvents = 'none';
+        } else {
+          miniPlayer.style.opacity = '1';
+          miniPlayer.style.pointerEvents = 'auto';
+        }
+      }
     }
 
     function updateProgressBar() {
@@ -5034,7 +5097,7 @@
         alert(`✅ Se cargaron ${songsLibrary.length} canciones correctamente.`);
         
         // Auto-etiquetar todas las canciones recién añadidas
-        // autoTagNewSongs(); // Deshabilitado - Last.fm retorna 403
+        // autoTagNewSongs();
       }
       
       // Populate filters and render biblioteca
@@ -5062,7 +5125,7 @@
             // Extract cover art
             if (tags.picture) {
               const picture = tags.picture;
-              const base64String = picture.data.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
+              const base64String = (picture.data && Array.isArray(picture.data)) ? picture.data.reduce((acc, byte) => acc + String.fromCharCode(byte), '') : '';
               metadata.cover = `data:${picture.format};base64,${btoa(base64String)}`;
             }
             

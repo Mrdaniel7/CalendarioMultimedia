@@ -3270,7 +3270,7 @@
         
         // Solo etiquetar si no está ya etiquetada
         if (!song.autoTagged) {
-        // const success = await autoTagSong(song);
+          const success = await autoTagSong(song);
           if (success) tagged++;
           
           // Actualizar progreso
@@ -3325,8 +3325,8 @@
       for (let i = 0; i < songsToTag.length; i++) {
         const song = songsToTag[i];
         
-        // const success = await autoTagSong(song);
-        // if (success) tagged++;
+        const success = await autoTagSong(song);
+        if (success) tagged++;
         
         const progressCount = document.getElementById('progress-count');
         if (progressCount) {
@@ -3827,7 +3827,7 @@
         
         // Auto-etiquetar la canción de YouTube
         console.log('🏷️ Etiquetando automáticamente...');
-        // await autoTagSong(song);
+        await autoTagSong(song);
         
         console.log('✅ Canción de YouTube añadida y etiquetada:', song.title);
         announce(`Canción añadida: ${song.title} por ${song.artist}`);
@@ -3841,7 +3841,7 @@
           renderBiblioteca(document.getElementById('searchInput').value);
         }
         
-        // alert eliminado
+        alert(`✅ Canción añadida correctamente\n\n📝 ${song.title}\n🎤 ${song.artist}\n\n💡 Los campos de título y artista son opcionales.\nSi los dejas vacíos, se obtienen automáticamente del video.\n\nℹ️ Información sobre YouTube:\n• Por defecto, solo escucharás el audio (video oculto)\n• Verás un botón flotante 📺 cuando reproduzcas\n• Haz clic en 📺 para ver el video en la esquina\n• El audio continúa aunque ocultes el video`);
         
       } catch (error) {
         console.error('❌ Error al añadir canción:', error);
@@ -3993,7 +3993,7 @@
       // Pausar reproductor HTML5 si está activo
       if (audioElement) {
         audioElement.pause();
-        audioElement.src = ''; // Comentado para evitar error
+        audioElement.src = '';
       }
       
       // Crear o actualizar contenedor del iframe
@@ -4014,34 +4014,15 @@
       iframe.id = 'youtube-iframe';
       iframe.width = '560';
       iframe.height = '315';
-      iframe.src = `https://www.youtube.com/embed/${song.youtubeId}?autoplay=1&mute=0&enablejsapi=1&controls=1`;
+      iframe.src = `https://www.youtube.com/embed/${song.youtubeId}?autoplay=1&enablejsapi=1&controls=1`;
       iframe.frameBorder = '0';
       
       // Sandbox con permisos completos
-      // iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms'); // ELIMINADO
+      iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-presentation allow-forms');
       iframe.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share');
       iframe.allowFullscreen = true;
       
       youtubeContainer.appendChild(iframe);
-
-const ytControls = document.createElement('div');
-ytControls.style.cssText = 'background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); padding: 15px; display: flex; justify-content: center; gap: 15px; border-radius: 0 0 10px 10px;';
-const btnPrev = document.createElement('button');
-btnPrev.innerHTML = '⏮️ Anterior';
-btnPrev.style.cssText = 'padding: 10px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;';
-btnPrev.onclick = () => previousSong();
-const btnStop = document.createElement('button');
-btnStop.innerHTML = '⏹️ Detener';
-btnStop.style.cssText = 'padding: 10px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;';
-btnStop.onclick = () => stopPlayback();
-const btnNext = document.createElement('button');
-btnNext.innerHTML = '⏭️ Siguiente';
-btnNext.style.cssText = 'padding: 10px 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer;';
-btnNext.onclick = () => nextSong();
-ytControls.appendChild(btnPrev);
-ytControls.appendChild(btnStop);
-ytControls.appendChild(btnNext);
-youtubeContainer.appendChild(ytControls);
       
       // Mostrar botón de toggle
       const toggleBtn = document.getElementById('youtube-toggle-btn');
@@ -4107,7 +4088,7 @@ youtubeContainer.appendChild(ytControls);
       if (audioPlayer) {
         audioPlayer.pause();
         audioPlayer.currentTime = 0;
-        audioPlayer.src = ''; // Comentado para evitar error
+        audioPlayer.src = '';
       }
       
       // Detener YouTube
@@ -5053,7 +5034,7 @@ youtubeContainer.appendChild(ytControls);
         alert(`✅ Se cargaron ${songsLibrary.length} canciones correctamente.\n\n🏷️ Etiquetando automáticamente...`);
         
         // Auto-etiquetar todas las canciones recién añadidas
-        // autoTagNewSongs();
+        autoTagNewSongs();
       }
       
       // Populate filters and render biblioteca
@@ -5081,7 +5062,7 @@ youtubeContainer.appendChild(ytControls);
             // Extract cover art
             if (tags.picture) {
               const picture = tags.picture;
-              const base64String = (picture.data && Array.isArray(picture.data)) ? picture.data.reduce((acc, byte) => acc + String.fromCharCode(byte), '') : '';
+              const base64String = picture.data.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
               metadata.cover = `data:${picture.format};base64,${btoa(base64String)}`;
             }
             

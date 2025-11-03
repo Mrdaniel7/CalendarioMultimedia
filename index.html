@@ -236,6 +236,38 @@ const GITHUB_CONFIG = {
   musicFolder: 'musica'
 };
 
+// === CANCIONES DE DEMOSTRACIÓN PRECARGADAS ===
+const DEMO_SONGS = [
+  {
+    id: 'demo-1',
+    title: 'Feeling Good',
+    artist: 'Nina Simone',
+    album: 'Demo',
+    type: 'local',
+    cover: '💿',
+    genres: ['Jazz', 'Soul'],
+    moods: ['Feliz', 'Enérgico'],
+    isFavorite: false
+  },
+  {
+    id: 'demo-2',
+    title: 'Beethoven - Fur Elise',
+    artist: 'Ludwig van Beethoven',
+    album: 'Demo',
+    type: 'local',
+    cover: '💿',
+    genres: ['Classical'],
+    moods: ['Tranquilo', 'Elegante'],
+    isFavorite: false
+  }
+];
+
+const loadDemoSongs = () => {
+  console.log('📚 Cargando canciones de demostración');
+  app.songs.push(...DEMO_SONGS);
+  console.log(`✅ ${DEMO_SONGS.length} canciones demo cargadas`);
+};
+
 // === FUNCIÓN PARA CARGAR CANCIONES DE GITHUB ===
 const fetchGitHubSongs = async () => {
   try {
@@ -537,19 +569,40 @@ async function loadMusicFolder() {
   const input = U.q('folder-input');
   input.onchange = async e => {
     const files = Array.from(e.target.files).filter(f => f.type.startsWith('audio/'));
+    console.log(`📁 Procesando carpeta con ${files.length} archivos...`);
+    
     for (const file of files) {
       const song = {
-        id: app.nextId++, title: file.name.replace(/\.[^/.]+$/, ''), artist: 'Desconocido',
-        duration: 0, type: SONG_TYPES.LOCAL, blob: file, cover: null, genres: [], moods: [], isFavorite: false,
-        album: 'Archivo Local', fileName: file.name
+        id: app.nextId++, 
+        title: file.name.replace(/\.[^/.]+$/, ''), 
+        artist: 'Desconocido',
+        duration: 0, 
+        type: SONG_TYPES.LOCAL, 
+        blob: file, 
+        cover: '💿', 
+        genres: [], 
+        moods: [], 
+        isFavorite: false,
+        album: 'Archivo Local', 
+        fileName: file.name,
+        dateAdded: new Date().toISOString()
       };
+      
       app.songs.push(song);
       await autoTagSong(song);
-      await extractMetadata(song);
+      
+      // Extraer metadatos de forma asíncrona
+      extractMetadata(song).catch(e => console.warn('Error en metadatos:', e));
+      
+      console.log('✅ Canción de carpeta añadida:', song.title);
     }
+    
+    // RE-RENDERIZAR después de cargar carpeta
     populateFilters();
     renderSongs();
-    alert(`✅ ${files.length} canciones cargadas`);
+    
+    console.log(`✅ Total canciones: ${app.songs.length}`);
+    alert(`✅ ${files.length} canciones cargadas de la carpeta`);
   };
   input.click();
 }
@@ -560,21 +613,43 @@ async function handleLocalFileUpload(files) {
     alert('⚠️ No se encontraron archivos de audio');
     return;
   }
+  
+  console.log(`📁 Procesando ${fileArray.length} archivos...`);
+  
   for (const file of fileArray) {
     const song = {
-      id: app.nextId++, title: file.name.replace(/\.[^/.]+$/, ''), artist: 'Desconocido',
-      duration: 0, type: SONG_TYPES.LOCAL, blob: file, cover: '💿', genres: [], moods: [], isFavorite: false,
-      album: 'Archivo Local', fileName: file.name, fileSize: file.size, mimeType: file.type
+      id: app.nextId++, 
+      title: file.name.replace(/\.[^/.]+$/, ''), 
+      artist: 'Desconocido',
+      duration: 0, 
+      type: SONG_TYPES.LOCAL, 
+      blob: file, 
+      cover: '💿', 
+      genres: [], 
+      moods: [], 
+      isFavorite: false,
+      album: 'Archivo Local', 
+      fileName: file.name, 
+      fileSize: file.size, 
+      mimeType: file.type,
+      dateAdded: new Date().toISOString()
     };
+    
     app.songs.push(song);
     await autoTagSong(song);
-    await extractMetadata(song);
+    
+    // Extraer metadatos de forma asíncrona
+    extractMetadata(song).catch(e => console.warn('Error en metadatos:', e));
+    
     console.log('✅ Canción local añadida:', song.title);
   }
+  
+  // RE-RENDERIZAR después de añadir
   populateFilters();
   renderSongs();
+  
   U.announce(`${fileArray.length} canciones añadidas`);
-  alert(`✅ ${fileArray.length} canciones añadidas a la biblioteca`);
+  console.log(`✅ Total canciones en biblioteca: ${app.songs.length}`);
 }
 
 async function extractMetadata(song) {
@@ -583,16 +658,36 @@ async function extractMetadata(song) {
     await new Promise((resolve, reject) => {
       jsmediatags.read(song.blob, {
         onSuccess: (tag) => {
-          if (tag.tags.title) song.title = tag.tags.title;
-          if (tag.tags.artist) song.artist = tag.tags.artist;
-          if (tag.tags.album) song.album = tag.tags.album;
-          if (tag.tags.picture) {
-            const pic = tag.tags.picture;
-            const base64 = pic.data.reduce((acc, byte) => acc + String.fromCharCode(byte), '');
-            song.cover = `data:${pic.format};base64,${btoa(base64)}`;
+          try {
+            const tags = tag.tags || {};
+            
+            if (tags.title) song.title = tags.title;
+            if (tags.artist) song.artist = tags.artist;
+            if (tags.album) song.album = tags.album;
+            
+            // MANEJO SEGURO de picture - evitar error de .reduce()
+            if (tags.picture) {
+              try {
+                const pic = tags.picture;
+                // Verificar que data existe y es array-like
+                if (pic.data && pic.format) {
+                  // Usar Uint8Array en lugar de reduce
+                  const byteArray = new Uint8Array(pic.data);
+                  const blob = new Blob([byteArray], { type: pic.format });
+                  const url = URL.createObjectURL(blob);
+                  song.cover = url;
+                }
+              } catch (picError) {
+                console.warn('⚠️ Error procesando imagen:', picError);
+              }
+            }
+            
+            console.log('🎵 Metadatos extraídos:', song.title);
+            resolve();
+          } catch (innerError) {
+            console.error('❌ Error procesando metadatos:', innerError);
+            resolve();
           }
-          console.log('🎵 Metadatos extraídos:', song.title);
-          resolve();
         },
         onError: (error) => {
           console.warn('⚠️ No se pudieron extraer metadatos:', error);
@@ -664,13 +759,33 @@ async function saveYouTube() {
 U.on(document, 'DOMContentLoaded', async () => {
   console.log('🚀 Iniciando aplicación...');
   
-  // Cargar canciones de GitHub al inicio
   try {
-    await loadGitHubSongs();
+    // 1. CARGAR CANCIONES DEMO PRIMERO (aparecen inmediatamente)
+    loadDemoSongs();
+    console.log(`📚 Canciones demo cargadas: ${app.songs.length}`);
+    
+    // 2. Renderizar biblioteca con canciones demo
     populateFilters();
     renderSongs();
-  } catch (e) {
-    console.warn('⚠️ Error cargando canciones de GitHub:', e);
+    console.log('✅ Biblioteca inicial renderizada');
+    
+    // 3. Cargar canciones de GitHub en segundo plano
+    try {
+      const gitHubSongs = await loadGitHubSongs();
+      if (gitHubSongs && gitHubSongs.length > 0) {
+        console.log(`🌐 Canciones de GitHub cargadas: ${gitHubSongs.length}`);
+        // Re-renderizar con las nuevas canciones
+        populateFilters();
+        renderSongs();
+      }
+    } catch (e) {
+      console.warn('⚠️ Error cargando canciones de GitHub:', e);
+    }
+    
+    console.log(`📊 TOTAL CANCIONES EN BIBLIOTECA: ${app.songs.length}`);
+    
+  } catch (error) {
+    console.error('❌ Error al inicializar:', error);
   }
   
   U.qa('.sidebar-item').forEach(item => U.on(item, 'click', e => {
